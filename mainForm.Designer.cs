@@ -30,10 +30,11 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
             panelTitle = new Panel();
+            panelTitleDetector = new Label();
+            btnThemeSwitch = new Button();
             dropdownOpen = new ComboBox();
             panelTitleImage = new PictureBox();
             panelTitleText = new Panel();
-            panelTitleDetector = new Label();
             panelTitleNotice = new Label();
             panelTitleName = new Label();
             panelSeparator1 = new Panel();
@@ -48,6 +49,8 @@
             // panelTitle
             // 
             panelTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            panelTitle.Controls.Add(panelTitleDetector);
+            panelTitle.Controls.Add(btnThemeSwitch);
             panelTitle.Controls.Add(dropdownOpen);
             panelTitle.Controls.Add(panelTitleImage);
             panelTitle.Controls.Add(panelTitleText);
@@ -56,15 +59,39 @@
             panelTitle.Size = new Size(953, 109);
             panelTitle.TabIndex = 0;
             // 
+            // panelTitleDetector
+            // 
+            panelTitleDetector.Font = new Font("Bahnschrift Light", 10F);
+            panelTitleDetector.ForeColor = Color.DodgerBlue;
+            panelTitleDetector.Location = new Point(145, 82);
+            panelTitleDetector.Name = "panelTitleDetector";
+            panelTitleDetector.Padding = new Padding(33, 4, 0, 0);
+            panelTitleDetector.Size = new Size(805, 27);
+            panelTitleDetector.TabIndex = 5;
+            panelTitleDetector.Text = "Could not detect SPT-AKI";
+            panelTitleDetector.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // btnThemeSwitch
+            // 
+            btnThemeSwitch.Cursor = Cursors.Hand;
+            btnThemeSwitch.Font = new Font("Bahnschrift Light", 14F);
+            btnThemeSwitch.Location = new Point(910, 8);
+            btnThemeSwitch.Name = "btnThemeSwitch";
+            btnThemeSwitch.Size = new Size(34, 34);
+            btnThemeSwitch.TabIndex = 7;
+            btnThemeSwitch.Text = "○";
+            btnThemeSwitch.UseVisualStyleBackColor = true;
+            btnThemeSwitch.Click += btnThemeSwitch_Click;
+            // 
             // dropdownOpen
             // 
             dropdownOpen.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             dropdownOpen.DropDownStyle = ComboBoxStyle.DropDownList;
-            dropdownOpen.Font = new Font("Bahnschrift Light", 13F);
+            dropdownOpen.Font = new Font("Bahnschrift Light", 15F);
             dropdownOpen.FormattingEnabled = true;
-            dropdownOpen.Location = new Point(650, 79);
+            dropdownOpen.Location = new Point(645, 9);
             dropdownOpen.Name = "dropdownOpen";
-            dropdownOpen.Size = new Size(300, 29);
+            dropdownOpen.Size = new Size(250, 32);
             dropdownOpen.TabIndex = 6;
             dropdownOpen.SelectedIndexChanged += dropdownOpen_SelectedIndexChanged;
             // 
@@ -80,26 +107,13 @@
             // 
             // panelTitleText
             // 
-            panelTitleText.Controls.Add(panelTitleDetector);
             panelTitleText.Controls.Add(panelTitleNotice);
             panelTitleText.Controls.Add(panelTitleName);
             panelTitleText.Font = new Font("Bahnschrift Light", 25F);
             panelTitleText.Location = new Point(142, 0);
             panelTitleText.Name = "panelTitleText";
-            panelTitleText.Size = new Size(505, 109);
+            panelTitleText.Size = new Size(326, 68);
             panelTitleText.TabIndex = 1;
-            // 
-            // panelTitleDetector
-            // 
-            panelTitleDetector.Font = new Font("Bahnschrift Light", 10F);
-            panelTitleDetector.ForeColor = Color.DodgerBlue;
-            panelTitleDetector.Location = new Point(3, 79);
-            panelTitleDetector.Name = "panelTitleDetector";
-            panelTitleDetector.Padding = new Padding(33, 4, 0, 0);
-            panelTitleDetector.Size = new Size(491, 27);
-            panelTitleDetector.TabIndex = 5;
-            panelTitleDetector.Text = "Could not detect SPT-AKI";
-            panelTitleDetector.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // panelTitleNotice
             // 
@@ -108,7 +122,7 @@
             panelTitleNotice.Location = new Point(3, 47);
             panelTitleNotice.Name = "panelTitleNotice";
             panelTitleNotice.Padding = new Padding(33, 0, 0, 0);
-            panelTitleNotice.Size = new Size(491, 20);
+            panelTitleNotice.Size = new Size(313, 20);
             panelTitleNotice.TabIndex = 4;
             panelTitleNotice.Text = "For use with SPT-AKI 3.X.X or above";
             // 
@@ -118,7 +132,7 @@
             panelTitleName.Location = new Point(3, 8);
             panelTitleName.Name = "panelTitleName";
             panelTitleName.Padding = new Padding(30, 0, 0, 0);
-            panelTitleName.Size = new Size(491, 40);
+            panelTitleName.Size = new Size(313, 40);
             panelTitleName.TabIndex = 2;
             panelTitleName.Text = "AKI Mod Installer";
             panelTitleName.TextAlign = ContentAlignment.MiddleLeft;
@@ -173,6 +187,7 @@
             Name = "mainForm";
             ShowIcon = false;
             StartPosition = FormStartPosition.CenterScreen;
+            FormClosing += mainForm_FormClosing;
             Load += mainForm_Load;
             panelTitle.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).EndInit();
@@ -193,5 +208,6 @@
         private Panel panelDragDrop;
         private Label titleDragDrop;
         private ComboBox dropdownOpen;
+        private Button btnThemeSwitch;
     }
 }
