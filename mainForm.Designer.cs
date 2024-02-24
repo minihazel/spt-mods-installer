@@ -38,7 +38,7 @@
             panelTitleName = new Label();
             panelSeparator1 = new Panel();
             panelDragDrop = new Panel();
-            label1 = new Label();
+            titleDragDrop = new Label();
             panelTitle.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).BeginInit();
             panelTitleText.SuspendLayout();
@@ -136,7 +136,7 @@
             // 
             panelDragDrop.AllowDrop = true;
             panelDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            panelDragDrop.Controls.Add(label1);
+            panelDragDrop.Controls.Add(titleDragDrop);
             panelDragDrop.Location = new Point(12, 171);
             panelDragDrop.Name = "panelDragDrop";
             panelDragDrop.Size = new Size(973, 442);
@@ -144,18 +144,18 @@
             panelDragDrop.DragDrop += panelDragDrop_DragDrop;
             panelDragDrop.DragEnter += panelDragDrop_DragEnter;
             // 
-            // label1
+            // titleDragDrop
             // 
-            label1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            label1.Font = new Font("Bahnschrift Light", 10F);
-            label1.ForeColor = Color.FromArgb(90, 90, 90);
-            label1.Location = new Point(3, 194);
-            label1.Name = "label1";
-            label1.Padding = new Padding(33, 0, 0, 0);
-            label1.Size = new Size(967, 20);
-            label1.TabIndex = 5;
-            label1.Text = "📥 Drag and drop any archive";
-            label1.TextAlign = ContentAlignment.MiddleCenter;
+            titleDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            titleDragDrop.Font = new Font("Bahnschrift Light", 10F);
+            titleDragDrop.ForeColor = Color.FromArgb(90, 90, 90);
+            titleDragDrop.Location = new Point(3, 194);
+            titleDragDrop.Name = "titleDragDrop";
+            titleDragDrop.Padding = new Padding(33, 0, 0, 0);
+            titleDragDrop.Size = new Size(967, 20);
+            titleDragDrop.TabIndex = 5;
+            titleDragDrop.Text = "📥 Drag and drop any archive";
+            titleDragDrop.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // mainForm
             // 
@@ -191,7 +191,7 @@
         private Label panelTitleNotice;
         private Label panelTitleDetector;
         private Panel panelDragDrop;
-        private Label label1;
+        private Label titleDragDrop;
         private ComboBox dropdownOpen;
     }
 }

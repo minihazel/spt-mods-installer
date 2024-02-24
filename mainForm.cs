@@ -1,7 +1,8 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.IO.Compression;
 using System.Diagnostics;
 using Aspose.Zip.SevenZip;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace spt_mods_installer
 {
@@ -16,9 +17,12 @@ namespace spt_mods_installer
         }
 
         public string currentEnv = Environment.CurrentDirectory;
+        public string bepInFolder = null;
+        public string userFolder = null;
+        public string sptName = null;
 
-        string bepInFolder = null;
-        string userFolder = null;
+        bool isValidLocation = false;
+        bool isConditionsMet = false;
 
         public mainForm()
         {
@@ -35,25 +39,53 @@ namespace spt_mods_installer
 
         private void loadDetection()
         {
-            // adding ranges
-            dropdownOpen.Items.Add("Open server folder");
-            dropdownOpen.Items.Add("Open BepInEx folder");
-            dropdownOpen.Items.Add("Open user mods folder");
+            panelTitleDetector.Text = $"Could not detect a functioning SPT-AKI install";
+            panelTitleDetector.ForeColor = Color.Red;
+            titleDragDrop.Text = "Drag and drop is disabled, see above";
+            dropdownOpen.Enabled = false;
+            sptName = $"SPT-AKI";
 
-            string akidata = Path.Join(currentEnv, "Aki_Data");
-            string server = Path.Join(akidata, "Server");
-            string configs = Path.Join(server, "configs");
+            bool currentEnvExists = Path.Exists(currentEnv);
+            if (currentEnvExists)
+            {
+                string akidata = Path.Join(currentEnv, "Aki_Data");
+                bool akidataExists = Path.Exists(akidata);
+                if (akidataExists)
+                {
+                    string server = Path.Join(akidata, "Server");
+                    bool serverExists = Path.Exists(server);
+                    if (serverExists)
+                    {
+                        string configs = Path.Join(server, "configs");
+                        bool configsExists = Path.Exists(configs);
+                        if (configsExists)
+                        {
+                            string coreJson = Path.Join(configs, "core.json");
+                            bool coreJsonExists = Path.Exists(coreJson);
+                            if (coreJsonExists)
+                            {
+                                string coreContent = File.ReadAllText(coreJson);
+                                akiCore core = JsonSerializer.Deserialize<akiCore>(coreContent);
 
-            string coreJson = Path.Join(configs, "core.json");
-            string coreContent = File.ReadAllText(coreJson);
-            akiCore core = JsonSerializer.Deserialize<akiCore>(coreContent);
+                                string akiVersion = core.akiVersion;
+                                string projectName = core.projectName;
+                                isValidLocation = true;
+                                sptName = $"{projectName} {akiVersion}";
 
-            string akiVersion = core.akiVersion;
-            string projectName = core.projectName;
-            string compatibleTarkovVersion = core.compatibleTarkovVersion;
+                                panelTitleDetector.Text = $"Detected {projectName} {akiVersion} ({currentEnv})";
+                                panelTitleDetector.ForeColor = Color.DodgerBlue;
+                                titleDragDrop.Text = "📥 Drag and drop any archive";
+                                dropdownOpen.Enabled = true;
 
-            panelTitleDetector.Text = $"Detected {projectName} {akiVersion} ({currentEnv})";
-            panelTitleDetector.ForeColor = Color.DodgerBlue;
+                                // adding ranges
+                                dropdownOpen.Items.Add("Open server folder");
+                                dropdownOpen.Items.Add("Open BepInEx folder");
+                                dropdownOpen.Items.Add("Open user mods folder");
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void extractArchive(string filepath)
@@ -114,8 +146,11 @@ namespace spt_mods_installer
             searchBep(originFolder);
             searchUser(originFolder);
 
-            string currentMod = Path.GetFileNameWithoutExtension(originFolder);
-            MessageBox.Show($"{currentMod} successfully installed", "AKI Mod Installer", MessageBoxButtons.OK);
+            if (isConditionsMet)
+            {
+                string currentMod = Path.GetFileNameWithoutExtension(originFolder);
+                MessageBox.Show($"{currentMod} successfully installed into {sptName}", "AKI Mod Installer", MessageBoxButtons.OK);
+            }
         }
 
         private void searchBep(string originFolder)
@@ -128,7 +163,10 @@ namespace spt_mods_installer
                 foreach (string subfolder in subfolders)
                 {
                     if (Path.GetFileNameWithoutExtension(subfolder).ToLower() == keyword)
+                    {
                         copyBepInEx(subfolder);
+                        break;
+                    }
                     else
                         searchBep(subfolder);
                 }
@@ -149,7 +187,10 @@ namespace spt_mods_installer
                 foreach (string subfolder in subfolders)
                 {
                     if (Path.GetFileNameWithoutExtension(subfolder).ToLower() == keyword)
+                    {
                         copyUser(subfolder);
+                        break;
+                    }
                     else
                         searchBep(subfolder);
                 }
@@ -164,12 +205,14 @@ namespace spt_mods_installer
         {
             string originalBepIn = Path.Combine(currentEnv, "bepinex");
             CopyFolder(originalFolder, originalBepIn);
+            isConditionsMet = true;
         }
 
         private void copyUser(string originalFolder)
         {
             string originalUser = Path.Combine(currentEnv, "user");
             CopyFolder(originalFolder, originalUser);
+            isConditionsMet = true;
         }
 
         static void CopyFolder(string sourceFolder, string destinationFolder)
@@ -213,7 +256,7 @@ namespace spt_mods_installer
 
         private void panelDragDrop_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) && isValidLocation)
             {
                 e.Effect = DragDropEffects.Copy;
             }
@@ -221,7 +264,7 @@ namespace spt_mods_installer
 
         private void panelDragDrop_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) && isValidLocation)
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
