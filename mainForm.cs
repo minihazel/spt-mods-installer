@@ -281,14 +281,14 @@ namespace spt_mods_installer
             }
         }
 
-        private void copyBepInEx(string originalFolder)
+        private async void copyBepInEx(string originalFolder)
         {
             string originalBepIn = Path.Combine(currentEnv, "bepinex");
-            CopyFolder(originalFolder, originalBepIn);
+            await CopyFolderAsync(originalFolder, originalBepIn);
             isConditionsMet = true;
         }
 
-        private void copyUser(string originalFolder, bool standardMethod)
+        private async void copyUser(string originalFolder, bool standardMethod)
         {
             if (!standardMethod)
             {
@@ -303,7 +303,7 @@ namespace spt_mods_installer
                     if (originalModsExists)
                     {
                         string fullModPath = Path.Combine(originalMods, originalFolderName);
-                        CopyFolder(originalFolder, fullModPath);
+                        await CopyFolderAsync(originalFolder, fullModPath);
                         isConditionsMet = true;
                     }
                 }
@@ -314,12 +314,13 @@ namespace spt_mods_installer
                 bool originalUserExists = Directory.Exists(originalUser);
                 if (originalUserExists)
                 {
-                    CopyFolder(originalFolder, originalUser);
+                    await CopyFolderAsync(originalFolder, originalUser);
                     isConditionsMet = true;
                 }
             }
         }
 
+        /*
         static void CopyFolder(string sourceFolder, string destinationFolder)
         {
             try
@@ -347,6 +348,44 @@ namespace spt_mods_installer
             catch (Exception ex)
             {
                 Console.WriteLine($"Copy Error: {ex.Message}");
+            }
+        }
+        */
+
+        static async Task CopyFolderAsync(string sourceFolder, string destinationFolder)
+        {
+            try
+            {
+                if (!Directory.Exists(destinationFolder))
+                {
+                    Directory.CreateDirectory(destinationFolder);
+                }
+
+                string[] files = Directory.GetFiles(sourceFolder);
+                string[] subfolders = Directory.GetDirectories(sourceFolder);
+                await Task.WhenAll(files.Select(file => CopyFileAsync(file, destinationFolder)));
+                await Task.WhenAll(subfolders.Select(subfolder => CopyFolderAsync(subfolder, Path.Combine(destinationFolder, Path.GetFileName(subfolder)))));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Async copy error: {ex.Message}");
+            }
+        }
+
+        static async Task CopyFileAsync(string sourceFile, string destinationFolder)
+        {
+            try
+            {
+                string destinationFilePath = Path.Combine(destinationFolder, Path.GetFileName(sourceFile));
+                using (var sourceStream = new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true))
+                using (var destinationStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
+                {
+                    await sourceStream.CopyToAsync(destinationStream);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Async single-copy Error: {ex.Message}");
             }
         }
 
@@ -382,8 +421,14 @@ namespace spt_mods_installer
                         int largeArchive = 15;
                         if (doesArchiveExceedSize(file, largeArchive))
                         {
-                            MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install", "Large archive detected", MessageBoxButtons.OK);
-                            extractArchive(file);
+                            if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install." + Environment.NewLine +
+                                Environment.NewLine +
+                                "Do you wish to proceed?",
+                                "Large archive detected",
+                                MessageBoxButtons.YesNo) == DialogResult.Yes)
+                            {
+                                extractArchive(file);
+                            }
                         }
                         else
                         {
