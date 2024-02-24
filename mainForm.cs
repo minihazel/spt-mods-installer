@@ -225,7 +225,7 @@ namespace spt_mods_installer
                 {
                     if (Path.GetFileNameWithoutExtension(subfolder).ToLower() == keyword)
                     {
-                        copyUser(subfolder);
+                        copyUser(subfolder, true);
                         break;
                     }
                     else
@@ -251,7 +251,7 @@ namespace spt_mods_installer
                     bool packageFileExists = File.Exists(packageFile);
                     if (packageFileExists)
                     {
-                        copyUser(subfolder);
+                        copyUser(subfolder, false);
                         isConditionsMet = true;
                         break;
                     }
@@ -272,20 +272,33 @@ namespace spt_mods_installer
             isConditionsMet = true;
         }
 
-        private void copyUser(string originalFolder)
+        private void copyUser(string originalFolder, bool standardMethod)
         {
-            string originalFolderName = Path.GetFileNameWithoutExtension(originalFolder);
-
-            string originalUser = Path.Combine(currentEnv, "user");
-            bool originalUserExists = Directory.Exists(originalUser);
-            if (originalUserExists)
+            if (!standardMethod)
             {
-                string originalMods = Path.Combine(originalUser, "mods");
-                bool originalModsExists = Directory.Exists(originalMods);
-                if (originalModsExists)
+                string originalFolderName = Path.GetFileNameWithoutExtension(originalFolder);
+
+                string originalUser = Path.Combine(currentEnv, "user");
+                bool originalUserExists = Directory.Exists(originalUser);
+                if (originalUserExists)
                 {
-                    string fullModPath = Path.Combine(originalMods, originalFolderName);
-                    CopyFolder(originalFolder, fullModPath);
+                    string originalMods = Path.Combine(originalUser, "mods");
+                    bool originalModsExists = Directory.Exists(originalMods);
+                    if (originalModsExists)
+                    {
+                        string fullModPath = Path.Combine(originalMods, originalFolderName);
+                        CopyFolder(originalFolder, fullModPath);
+                        isConditionsMet = true;
+                    }
+                }
+            }
+            else
+            {
+                string originalUser = Path.Combine(currentEnv, "user");
+                bool originalUserExists = Directory.Exists(originalUser);
+                if (originalUserExists)
+                {
+                    CopyFolder(originalFolder, originalUser);
                     isConditionsMet = true;
                 }
             }
