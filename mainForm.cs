@@ -190,6 +190,22 @@ namespace spt_mods_installer
             }
         }
 
+        static bool doesArchiveExceedSize(string filePath, int maxSizeInMegabytes)
+        {
+            try
+            {
+                FileInfo fileInfo = new FileInfo(filePath);
+                long fileSizeInBytes = fileInfo.Length;
+                long maxSizeInBytes = maxSizeInMegabytes * 1024 * 1024;
+
+                return fileSizeInBytes > maxSizeInBytes;
+            }
+            catch (Exception ex)
+            {
+                return false; // Exception means that the file doesn't exceed the size limit
+            }
+        }
+
         private void searchBep(string originFolder)
         {
             string keyword = "bepinex";
@@ -363,11 +379,20 @@ namespace spt_mods_installer
 
                     if (extension == ".rar" || extension == ".zip" || extension == ".7z")
                     {
-                        extractArchive(file);
+                        int largeArchive = 15;
+                        if (doesArchiveExceedSize(file, largeArchive))
+                        {
+                            MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install", "Large archive detected", MessageBoxButtons.OK);
+                            extractArchive(file);
+                        }
+                        else
+                        {
+                            extractArchive(file);
+                        }
                     }
                     else
                     {
-                        MessageBox.Show("", "AKI Mod Installer", MessageBoxButtons.OK);
+                        MessageBox.Show("Only (rar, zip, 7z) formats are currently supported", "AKI Mod Installer", MessageBoxButtons.OK);
                     }
                 }
             }

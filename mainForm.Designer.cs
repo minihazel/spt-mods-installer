@@ -86,6 +86,7 @@
             // dropdownOpen
             // 
             dropdownOpen.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            dropdownOpen.Cursor = Cursors.Hand;
             dropdownOpen.DropDownStyle = ComboBoxStyle.DropDownList;
             dropdownOpen.Font = new Font("Bahnschrift Light", 15F);
             dropdownOpen.FormattingEnabled = true;
