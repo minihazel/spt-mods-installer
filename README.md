@@ -22,4 +22,4 @@ This is a simple little application built to allow users to install zipped mods 
 
 ## Supports
 As usual, always available on Discord:
-- `net.hazelify` or the [https://discord.com/invite/Xn9msqQZan](SPT-AKI Discord server).
+- `net.hazelify` or the [SPT-AKI Discord server](https://discord.com/invite/Xn9msqQZan).
