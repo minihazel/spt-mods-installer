@@ -388,25 +388,33 @@ namespace spt_mods_installer
             }
             else if (selected == 1)
             {
-                ProcessStartInfo startInfo = new ProcessStartInfo
+                string plugins = Path.Combine(bepInFolder, "plugins");
+                bool pluginsExists = Directory.Exists(plugins);
+                if (pluginsExists)
                 {
-                    FileName = bepInFolder,
-                    UseShellExecute = true
-                };
+                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    {
+                        FileName = plugins,
+                        UseShellExecute = true
+                    };
 
-                Process.Start(startInfo);
+                    Process.Start(startInfo);
+                }
             }
             else if (selected == 2)
             {
-
                 string mods = Path.Combine(userFolder, "mods");
-                ProcessStartInfo startInfo = new ProcessStartInfo
+                bool modsExists = Directory.Exists(mods);
+                if (modsExists)
                 {
-                    FileName = mods,
-                    UseShellExecute = true
-                };
+                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    {
+                        FileName = mods,
+                        UseShellExecute = true
+                    };
 
-                Process.Start(startInfo);
+                    Process.Start(startInfo);
+                }
             }
 
             dropdownOpen.SelectedIndex = -1;
