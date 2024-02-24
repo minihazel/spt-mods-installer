@@ -164,12 +164,12 @@
             titleDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             titleDragDrop.Font = new Font("Bahnschrift Light", 10F);
             titleDragDrop.ForeColor = Color.FromArgb(90, 90, 90);
-            titleDragDrop.Location = new Point(3, 194);
+            titleDragDrop.Location = new Point(3, 190);
             titleDragDrop.Name = "titleDragDrop";
             titleDragDrop.Padding = new Padding(33, 0, 0, 0);
-            titleDragDrop.Size = new Size(967, 20);
+            titleDragDrop.Size = new Size(967, 60);
             titleDragDrop.TabIndex = 5;
-            titleDragDrop.Text = "📥 Drag and drop any archive";
+            titleDragDrop.Text = "📥 Drag and drop any archive\r\n\r\nSupported formats: .rar  /  .zip  /  .7z";
             titleDragDrop.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // mainForm
