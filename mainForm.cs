@@ -281,14 +281,14 @@ namespace spt_mods_installer
             }
         }
 
-        private async void copyBepInEx(string originalFolder)
+        private void copyBepInEx(string originalFolder)
         {
             string originalBepIn = Path.Combine(currentEnv, "bepinex");
-            await CopyFolderAsync(originalFolder, originalBepIn);
+            CopyFolder(originalFolder, originalBepIn);
             isConditionsMet = true;
         }
 
-        private async void copyUser(string originalFolder, bool standardMethod)
+        private void copyUser(string originalFolder, bool standardMethod)
         {
             if (!standardMethod)
             {
@@ -303,7 +303,7 @@ namespace spt_mods_installer
                     if (originalModsExists)
                     {
                         string fullModPath = Path.Combine(originalMods, originalFolderName);
-                        await CopyFolderAsync(originalFolder, fullModPath);
+                        CopyFolder(originalFolder, fullModPath);
                         isConditionsMet = true;
                     }
                 }
@@ -314,13 +314,12 @@ namespace spt_mods_installer
                 bool originalUserExists = Directory.Exists(originalUser);
                 if (originalUserExists)
                 {
-                    await CopyFolderAsync(originalFolder, originalUser);
+                    CopyFolder(originalFolder, originalUser);
                     isConditionsMet = true;
                 }
             }
         }
 
-        /*
         static void CopyFolder(string sourceFolder, string destinationFolder)
         {
             try
@@ -350,7 +349,6 @@ namespace spt_mods_installer
                 Console.WriteLine($"Copy Error: {ex.Message}");
             }
         }
-        */
 
         static async Task CopyFolderAsync(string sourceFolder, string destinationFolder)
         {
@@ -421,7 +419,7 @@ namespace spt_mods_installer
                         int largeArchive = 15;
                         if (doesArchiveExceedSize(file, largeArchive))
                         {
-                            if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install." + Environment.NewLine +
+                            if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
                                 Environment.NewLine +
                                 "Do you wish to proceed?",
                                 "Large archive detected",
