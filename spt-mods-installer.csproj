@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>dimensions.ico</ApplicationIcon>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
-    <AssemblyName>AKI Mods Installer</AssemblyName>
+    <AssemblyName>SPT Mods Installer</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
