@@ -1,10 +1,12 @@
 ﻿using System.Text.Json;
 using System.IO.Compression;
 using System.Diagnostics;
-using Aspose.Zip.SevenZip;
 using System.ComponentModel.DataAnnotations.Schema;
-using SharpCompress.Common;
 using SharpCompress.Archives;
+using SharpCompress.Archives.Rar;
+using SharpCompress.Archives.SevenZip;
+using SharpCompress.Archives.Zip;
+using SharpCompress.Common;
 
 namespace spt_mods_installer
 {
@@ -13,7 +15,7 @@ namespace spt_mods_installer
     {
         public class akiCore
         {
-            public string akiVersion { get; set; }
+            public string sptVersion { get; set; }
             public string projectName { get; set; }
             public string compatibleTarkovVersion { get; set; }
         }
@@ -41,16 +43,16 @@ namespace spt_mods_installer
 
         private void loadDetection()
         {
-            panelTitleDetector.Text = $"Could not detect a functioning SPT-AKI install";
+            panelTitleDetector.Text = $"Could not detect a functioning SPT install";
             panelTitleDetector.ForeColor = Color.Red;
             titleDragDrop.Text = "Drag and drop is disabled, see above";
             dropdownOpen.Enabled = false;
-            sptName = $"SPT-AKI";
+            sptName = $"SPT";
 
             bool currentEnvExists = Path.Exists(currentEnv);
             if (currentEnvExists)
             {
-                string akidata = Path.Join(currentEnv, "Aki_Data");
+                string akidata = Path.Join(currentEnv, "SPT_Data");
                 bool akidataExists = Path.Exists(akidata);
                 if (akidataExists)
                 {
@@ -69,12 +71,12 @@ namespace spt_mods_installer
                                 string coreContent = File.ReadAllText(coreJson);
                                 akiCore core = JsonSerializer.Deserialize<akiCore>(coreContent);
 
-                                string akiVersion = core.akiVersion;
+                                string akiVersion = core.sptVersion;
                                 string projectName = core.projectName;
                                 isValidLocation = true;
                                 sptName = $"{projectName} {akiVersion}";
 
-                                panelTitleDetector.Text = $"Detected {projectName} {akiVersion} ({currentEnv})";
+                                panelTitleDetector.Text = $"Detected {projectName} {akiVersion}";
                                 panelTitleDetector.ForeColor = Color.DodgerBlue;
                                 titleDragDrop.Text = "📥 Drag and drop any archive";
                                 dropdownOpen.Enabled = true;
@@ -92,10 +94,12 @@ namespace spt_mods_installer
 
         private void extractArchive(string filepath)
         {
+            string extractPath = null;
+
             try
             {
                 // string extractPath = Path.Combine(Path.GetDirectoryName(filepath), Path.GetFileNameWithoutExtension(filepath));
-                string extractPath = Path.Combine(currentEnv, Path.GetFileNameWithoutExtension(filepath));
+                extractPath = Path.Combine(currentEnv, Path.GetFileNameWithoutExtension(filepath));
 
                 if (!Directory.Exists(extractPath))
                 {
@@ -105,60 +109,18 @@ namespace spt_mods_installer
                 string currentMod = Path.GetFileNameWithoutExtension(filepath);
                 string extension = Path.GetExtension(filepath).ToLower();
 
-                if (extension == ".zip")
+                using (var archive = ArchiveFactory.Open(filepath))
                 {
-                    ZipFile.ExtractToDirectory(filepath, extractPath);
-                    detectModFolders(extractPath);
-
-                    try
+                    foreach (var entry in archive.Entries)
                     {
-                        Directory.Delete(extractPath, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"ZIP delete error: {ex.Message}");
-                    }
-                }
-                else if (extension == ".7z")
-                {
-                    using (SevenZipArchive archive = new SevenZipArchive(filepath))
-                    {
-                        archive.ExtractToDirectory(extractPath);
-                    }
-
-                    detectModFolders(extractPath);
-
-                    try
-                    {
-                        Directory.Delete(extractPath, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"7z delete error: {ex.Message}");
-                    }
-                }
-                else if (extension == ".rar")
-                {
-                    using (var archive = ArchiveFactory.Open(filepath))
-                    {
-                        foreach (var entry in archive.Entries)
+                        if (!entry.IsDirectory)
                         {
-                            if (!entry.IsDirectory)
+                            entry.WriteToDirectory(extractPath, new ExtractionOptions
                             {
-                                entry.WriteToDirectory(extractPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
-                            }
+                                ExtractFullPath = true,
+                                Overwrite = true
+                            });
                         }
-                    }
-
-                    detectModFolders(extractPath);
-
-                    try
-                    {
-                        Directory.Delete(extractPath, true);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"7z delete error: {ex.Message}");
                     }
                 }
             }
@@ -166,6 +128,70 @@ namespace spt_mods_installer
             {
                 MessageBox.Show($"Extract error: {ex.Message}");
             }
+
+            moveFolder(extractPath);
+        }
+
+        private void moveFolder(string extractPath)
+        {
+            int installCounter = 0;
+            string fileName = Path.GetFileNameWithoutExtension(extractPath);
+            bool bepExist = false;
+            bool userExist = false;
+
+            bool doesFolderExist = Directory.Exists(extractPath);
+            if (doesFolderExist)
+            {
+                string BepInEx_path = Path.Combine(extractPath, "BepInEx");
+                // string final_Bep = Path.Combine(BepInEx_path, "plugins");
+                // string final_Bep_path = Directory.GetDirectories(final_Bep).FirstOrDefault();
+
+                string user_path = Path.Combine(extractPath, "user");
+                string final_user = Path.Combine(user_path, "mods");
+                // string final_user_path = Directory.GetDirectories(final_user).FirstOrDefault();
+
+                bool BepInEx_exists = Directory.Exists(BepInEx_path);
+                bool user_path_exists = Directory.Exists(user_path);
+
+                /*
+                bool final_Bep_exists = Directory.Exists(final_Bep_path);
+                bool final_user_exists = Directory.Exists(final_user_path);
+                */
+
+                titleHistory.Text = $"Mod {fileName} could not be installed; invalid folder structure";
+
+                if (BepInEx_exists)
+                {
+                    CopyFolder(BepInEx_path, Path.Combine(currentEnv, Path.GetFileName(BepInEx_path)));
+                    Debug.WriteLine($"success BepInEx");
+                    titleHistory.Text = $"Client mod of {fileName} installed";
+                    bepExist = true;
+                }
+
+                if (user_path_exists)
+                {
+                    CopyFolder(user_path, Path.Combine(currentEnv, Path.GetFileName(user_path)));
+                    Debug.WriteLine($"success user/mods");
+                    titleHistory.Text += Environment.NewLine + $"Server mod of {fileName} installed";
+                    userExist = true;
+                }
+
+                if (!bepExist && !userExist)
+                {
+                    string modFolder = Directory.GetDirectories(extractPath).FirstOrDefault();
+                    string packageJson = Path.Combine(modFolder, "package.json");
+                    bool packageJsonExists = File.Exists(packageJson);
+                    if (packageJsonExists)
+                    {
+                        CopyFolder(user_path, Path.Combine(final_user, Path.GetFileName(modFolder)));
+                    }
+                }
+
+                titleHistory.Visible = true;
+                timerConfirmation.Start();
+            }
+
+            Directory.Delete(extractPath, true);
         }
 
         private void detectModFolders(string originFolder)
@@ -435,7 +461,7 @@ namespace spt_mods_installer
                     }
                     else
                     {
-                        MessageBox.Show("Only (rar, zip, 7z) formats are currently supported", "AKI Mod Installer", MessageBoxButtons.OK);
+                        MessageBox.Show("Only (rar, zip, 7z) formats are currently supported", "SPT Mod Installer", MessageBoxButtons.OK);
                     }
                 }
             }
@@ -528,6 +554,14 @@ namespace spt_mods_installer
 
         private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+        }
+
+        private void timerConfirmation_Tick(object sender, EventArgs e)
+        {
+            timerConfirmation.Stop();
+            timerConfirmation.Dispose();
+            titleHistory.Visible = false;
+            titleHistory.Text = "";
         }
     }
 }

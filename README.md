@@ -3,7 +3,7 @@ This is a simple little application built to allow users to install zipped mods 
 
 ## Usage
 - Download the tool from the [AKI workshop]().
-- Extract `AKI Mods Installer.exe` to any SPT-AKI folder (same place as `Aki.Server.exe`).
+- Extract `AKI Mods Installer.exe` to any SPT folder (same place as `Aki.Server.exe`).
 - Run `AKI Mods Installer.exe`.
 - Drag and drop any compressed archives into the app (see `Supported extensions`).
 
@@ -22,4 +22,4 @@ This is a simple little application built to allow users to install zipped mods 
 
 ## Supports
 As usual, always available on Discord:
-- `net.hazelify` or the [SPT-AKI Discord server](https://discord.com/invite/Xn9msqQZan).
+- `net.hazelify` or the [SPT Discord server](https://discord.com/invite/Xn9msqQZan).
