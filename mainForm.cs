@@ -134,60 +134,46 @@ namespace spt_mods_installer
 
         private void moveFolder(string extractPath)
         {
-            int installCounter = 0;
+            List<string> completedTasks = new List<string>();
             string fileName = Path.GetFileNameWithoutExtension(extractPath);
-            bool bepExist = false;
-            bool userExist = false;
 
             bool doesFolderExist = Directory.Exists(extractPath);
             if (doesFolderExist)
             {
-                string BepInEx_path = Path.Combine(extractPath, "BepInEx");
-                // string final_Bep = Path.Combine(BepInEx_path, "plugins");
-                // string final_Bep_path = Directory.GetDirectories(final_Bep).FirstOrDefault();
-
-                string user_path = Path.Combine(extractPath, "user");
-                string final_user = Path.Combine(user_path, "mods");
-                // string final_user_path = Directory.GetDirectories(final_user).FirstOrDefault();
-
-                bool BepInEx_exists = Directory.Exists(BepInEx_path);
-                bool user_path_exists = Directory.Exists(user_path);
-
-                /*
-                bool final_Bep_exists = Directory.Exists(final_Bep_path);
-                bool final_user_exists = Directory.Exists(final_user_path);
-                */
-
-                titleHistory.Text = $"Mod {fileName} could not be installed; invalid folder structure";
-
-                if (BepInEx_exists)
+                string duplicatedPath = Path.Combine(extractPath, fileName);
+                bool duplicatedPathExists = Directory.Exists(duplicatedPath);
+                if (duplicatedPathExists)
                 {
-                    CopyFolder(BepInEx_path, Path.Combine(currentEnv, Path.GetFileName(BepInEx_path)));
-                    Debug.WriteLine($"success BepInEx");
-                    titleHistory.Text = $"Client mod of {fileName} installed";
-                    bepExist = true;
+                    Debug.WriteLine($"success duplicated");
+                    completedTasks.Add($"Server mod of {fileName} installed");
+                    searchUserManually(extractPath);
                 }
-
-                if (user_path_exists)
+                else
                 {
-                    CopyFolder(user_path, Path.Combine(currentEnv, Path.GetFileName(user_path)));
-                    Debug.WriteLine($"success user/mods");
-                    titleHistory.Text += Environment.NewLine + $"Server mod of {fileName} installed";
-                    userExist = true;
-                }
+                    string BepInEx_path = Path.Combine(extractPath, "BepInEx");
+                    string user_path = Path.Combine(extractPath, "user");
+                    bool BepInEx_exists = Directory.Exists(BepInEx_path);
+                    bool user_path_exists = Directory.Exists(user_path);
 
-                if (!bepExist && !userExist)
-                {
-                    string modFolder = Directory.GetDirectories(extractPath).FirstOrDefault();
-                    string packageJson = Path.Combine(modFolder, "package.json");
-                    bool packageJsonExists = File.Exists(packageJson);
-                    if (packageJsonExists)
+                    if (BepInEx_exists)
                     {
-                        CopyFolder(user_path, Path.Combine(final_user, Path.GetFileName(modFolder)));
+                        CopyFolder(BepInEx_path, Path.Combine(currentEnv, Path.GetFileName(BepInEx_path)));
+                        Debug.WriteLine($"success BepInEx");
+                        completedTasks.Add($"Client mod of {fileName} installed");
+                    }
+
+                    if (user_path_exists)
+                    {
+                        CopyFolder(user_path, Path.Combine(currentEnv, Path.GetFileName(user_path)));
+                        Debug.WriteLine($"success user/mods");
+                        completedTasks.Add($"Server mod of {fileName} installed");
                     }
                 }
 
-                titleHistory.Visible = true;
+                titleHistory.Text = string.Join(Environment.NewLine, completedTasks);
+
+                int fullDelay = Convert.ToInt32(notificationDelay.Value) + 1000;
+                timerConfirmation.Interval = fullDelay;
                 timerConfirmation.Start();
             }
 
@@ -207,12 +193,12 @@ namespace spt_mods_installer
             if (isConditionsMet)
             {
                 string currentMod = Path.GetFileNameWithoutExtension(originFolder);
-                MessageBox.Show($"{currentMod} successfully installed into {sptName}", "AKI Mod Installer", MessageBoxButtons.OK);
+                MessageBox.Show($"{currentMod} successfully installed into {sptName}", "SPT Mod Installer", MessageBoxButtons.OK);
             }
             else
             {
                 string currentMod = Path.GetFileNameWithoutExtension(originFolder);
-                MessageBox.Show($"{currentMod} could not be installed. Make sure it\'s a valid mod, then try again", "AKI Mod Installer", MessageBoxButtons.OK);
+                MessageBox.Show($"{currentMod} could not be installed. Make sure it\'s a valid mod, then try again", "SPT Mod Installer", MessageBoxButtons.OK);
             }
         }
 
@@ -522,6 +508,10 @@ namespace spt_mods_installer
 
                 panelTitleName.ForeColor = Color.LightGray;
                 panelTitleNotice.ForeColor = Color.LightGray;
+                lblDelayTitle.ForeColor = Color.LightGray;
+                lblDelayTitle2.ForeColor = Color.LightGray;
+                notificationDelay.BackColor = Color.FromArgb(38, 41, 44);
+                notificationDelay.ForeColor = Color.LightGray;
 
                 this.BackColor = Color.FromArgb(38, 41, 44);
                 foreach (Panel pnl in this.Controls)
@@ -538,6 +528,10 @@ namespace spt_mods_installer
 
                 panelTitleName.ForeColor = SystemColors.ControlText;
                 panelTitleNotice.ForeColor = Color.FromArgb(50, 50, 50);
+                lblDelayTitle.ForeColor = Color.FromArgb(50, 50, 50);
+                lblDelayTitle2.ForeColor = Color.FromArgb(50, 50, 50);
+                notificationDelay.BackColor = SystemColors.Window;
+                notificationDelay.ForeColor = Color.FromArgb(50, 50, 50);
 
                 this.BackColor = SystemColors.Control;
                 foreach (Panel pnl in this.Controls)
@@ -560,7 +554,6 @@ namespace spt_mods_installer
         {
             timerConfirmation.Stop();
             timerConfirmation.Dispose();
-            titleHistory.Visible = false;
             titleHistory.Text = "";
         }
     }

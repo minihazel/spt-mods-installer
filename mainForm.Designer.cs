@@ -31,6 +31,9 @@
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
             panelTitle = new Panel();
+            lblDelayTitle2 = new Label();
+            notificationDelay = new NumericUpDown();
+            lblDelayTitle = new Label();
             panelTitleDetector = new Label();
             btnThemeSwitch = new Button();
             dropdownOpen = new ComboBox();
@@ -44,6 +47,7 @@
             titleDragDrop = new Label();
             timerConfirmation = new System.Windows.Forms.Timer(components);
             panelTitle.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)notificationDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).BeginInit();
             panelTitleText.SuspendLayout();
             panelDragDrop.SuspendLayout();
@@ -52,6 +56,9 @@
             // panelTitle
             // 
             panelTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            panelTitle.Controls.Add(lblDelayTitle2);
+            panelTitle.Controls.Add(notificationDelay);
+            panelTitle.Controls.Add(lblDelayTitle);
             panelTitle.Controls.Add(panelTitleDetector);
             panelTitle.Controls.Add(btnThemeSwitch);
             panelTitle.Controls.Add(dropdownOpen);
@@ -62,16 +69,52 @@
             panelTitle.Size = new Size(953, 109);
             panelTitle.TabIndex = 0;
             // 
+            // lblDelayTitle2
+            // 
+            lblDelayTitle2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblDelayTitle2.AutoSize = true;
+            lblDelayTitle2.Font = new Font("Bahnschrift Light", 10F);
+            lblDelayTitle2.ForeColor = Color.FromArgb(50, 50, 50);
+            lblDelayTitle2.Location = new Point(897, 56);
+            lblDelayTitle2.Name = "lblDelayTitle2";
+            lblDelayTitle2.Size = new Size(15, 17);
+            lblDelayTitle2.TabIndex = 10;
+            lblDelayTitle2.Text = "s";
+            // 
+            // notificationDelay
+            // 
+            notificationDelay.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            notificationDelay.Location = new Point(850, 52);
+            notificationDelay.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            notificationDelay.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            notificationDelay.Name = "notificationDelay";
+            notificationDelay.Size = new Size(45, 25);
+            notificationDelay.TabIndex = 9;
+            notificationDelay.Value = new decimal(new int[] { 3, 0, 0, 0 });
+            // 
+            // lblDelayTitle
+            // 
+            lblDelayTitle.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblDelayTitle.AutoSize = true;
+            lblDelayTitle.Font = new Font("Bahnschrift Light", 10F);
+            lblDelayTitle.ForeColor = Color.FromArgb(50, 50, 50);
+            lblDelayTitle.Location = new Point(679, 56);
+            lblDelayTitle.Name = "lblDelayTitle";
+            lblDelayTitle.Size = new Size(165, 17);
+            lblDelayTitle.TabIndex = 8;
+            lblDelayTitle.Text = "Status notification delay:";
+            // 
             // panelTitleDetector
             // 
             panelTitleDetector.Font = new Font("Bahnschrift Light", 10F);
             panelTitleDetector.ForeColor = Color.DodgerBlue;
             panelTitleDetector.Location = new Point(145, 71);
             panelTitleDetector.Name = "panelTitleDetector";
-            panelTitleDetector.Padding = new Padding(33, 4, 0, 0);
+            panelTitleDetector.Padding = new Padding(33, 0, 0, 6);
             panelTitleDetector.Size = new Size(805, 38);
             panelTitleDetector.TabIndex = 5;
             panelTitleDetector.Text = "Could not detect SPT";
+            panelTitleDetector.TextAlign = ContentAlignment.BottomLeft;
             // 
             // btnThemeSwitch
             // 
@@ -165,17 +208,14 @@
             // 
             // titleHistory
             // 
-            titleHistory.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            titleHistory.AutoSize = true;
+            titleHistory.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             titleHistory.Font = new Font("Bahnschrift Light", 10F);
             titleHistory.ForeColor = Color.FromArgb(90, 90, 90);
-            titleHistory.Location = new Point(3, 422);
+            titleHistory.Location = new Point(3, 389);
             titleHistory.Name = "titleHistory";
-            titleHistory.Size = new Size(175, 17);
+            titleHistory.Size = new Size(967, 50);
             titleHistory.TabIndex = 6;
-            titleHistory.Text = "Mod Placeholder installed";
             titleHistory.TextAlign = ContentAlignment.BottomLeft;
-            titleHistory.Visible = false;
             // 
             // titleDragDrop
             // 
@@ -214,10 +254,11 @@
             FormClosing += mainForm_FormClosing;
             Load += mainForm_Load;
             panelTitle.ResumeLayout(false);
+            panelTitle.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)notificationDelay).EndInit();
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).EndInit();
             panelTitleText.ResumeLayout(false);
             panelDragDrop.ResumeLayout(false);
-            panelDragDrop.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -236,5 +277,8 @@
         private Button btnThemeSwitch;
         private Label titleHistory;
         private System.Windows.Forms.Timer timerConfirmation;
+        private Label lblDelayTitle;
+        private Label lblDelayTitle2;
+        private NumericUpDown notificationDelay;
     }
 }
