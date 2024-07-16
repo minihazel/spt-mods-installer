@@ -7,6 +7,7 @@ using SharpCompress.Archives.Rar;
 using SharpCompress.Archives.SevenZip;
 using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
+using Microsoft.VisualBasic.Devices;
 
 namespace spt_mods_installer
 {
@@ -20,7 +21,7 @@ namespace spt_mods_installer
             public string compatibleTarkovVersion { get; set; }
         }
 
-        public string currentEnv = Environment.CurrentDirectory;
+        public string currentEnv = $"D:\\SPT Iterations\\SPT-AKI 3.9.0";
         public string bepInFolder = null;
         public string userFolder = null;
         public string sptName = null;
@@ -134,40 +135,48 @@ namespace spt_mods_installer
 
         private void moveFolder(string extractPath)
         {
+            bool userChecked = false;
+
             List<string> completedTasks = new List<string>();
             string fileName = Path.GetFileNameWithoutExtension(extractPath);
 
             bool doesFolderExist = Directory.Exists(extractPath);
             if (doesFolderExist)
             {
-                string duplicatedPath = Path.Combine(extractPath, fileName);
-                bool duplicatedPathExists = Directory.Exists(duplicatedPath);
-                if (duplicatedPathExists)
+                string[] inFolder = Directory.GetDirectories(extractPath);
+
+                foreach (string folder in inFolder)
                 {
-                    Debug.WriteLine($"success duplicated");
-                    completedTasks.Add($"Server mod of {fileName} installed");
-                    searchUserManually(extractPath);
+                    if (Path.GetFileNameWithoutExtension(folder) == "user")
+                    {
+                        string BepInEx_path = Path.Combine(extractPath, "BepInEx");
+                        string user_path = Path.Combine(extractPath, "user");
+                        bool BepInEx_exists = Directory.Exists(BepInEx_path);
+                        bool user_path_exists = Directory.Exists(user_path);
+
+                        if (BepInEx_exists)
+                        {
+                            CopyFolder(BepInEx_path, Path.Combine(currentEnv, Path.GetFileName(BepInEx_path)));
+                            Debug.WriteLine($"success BepInEx");
+                            completedTasks.Add($"Client mod of {fileName} installed");
+                        }
+
+                        if (user_path_exists)
+                        {
+                            CopyFolder(user_path, Path.Combine(currentEnv, Path.GetFileName(user_path)));
+                            Debug.WriteLine($"success user/mods");
+                            completedTasks.Add($"Server mod of {fileName} installed");
+                            userChecked = true;
+                        }
+                        break;
+                    }
+                    else
+                        continue;
                 }
-                else
+
+                if (!userChecked)
                 {
-                    string BepInEx_path = Path.Combine(extractPath, "BepInEx");
-                    string user_path = Path.Combine(extractPath, "user");
-                    bool BepInEx_exists = Directory.Exists(BepInEx_path);
-                    bool user_path_exists = Directory.Exists(user_path);
-
-                    if (BepInEx_exists)
-                    {
-                        CopyFolder(BepInEx_path, Path.Combine(currentEnv, Path.GetFileName(BepInEx_path)));
-                        Debug.WriteLine($"success BepInEx");
-                        completedTasks.Add($"Client mod of {fileName} installed");
-                    }
-
-                    if (user_path_exists)
-                    {
-                        CopyFolder(user_path, Path.Combine(currentEnv, Path.GetFileName(user_path)));
-                        Debug.WriteLine($"success user/mods");
-                        completedTasks.Add($"Server mod of {fileName} installed");
-                    }
+                    searchUserManually(extractPath);
                 }
 
                 titleHistory.Text = string.Join(Environment.NewLine, completedTasks);
@@ -284,7 +293,9 @@ namespace spt_mods_installer
                         break;
                     }
                     else
+                    {
                         searchUserManually(subfolder);
+                    }
                 }
             }
             catch (Exception ex)
@@ -428,9 +439,11 @@ namespace spt_mods_installer
 
                     if (extension == ".rar" || extension == ".zip" || extension == ".7z")
                     {
+                        Debug.WriteLine("success 1");
                         int largeArchive = 15;
                         if (doesArchiveExceedSize(file, largeArchive))
                         {
+                            Debug.WriteLine("success 2");
                             if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
                                 Environment.NewLine +
                                 "Do you wish to proceed?",
@@ -438,6 +451,7 @@ namespace spt_mods_installer
                                 MessageBoxButtons.YesNo) == DialogResult.Yes)
                             {
                                 extractArchive(file);
+                                Debug.WriteLine("success 3");
                             }
                         }
                         else
