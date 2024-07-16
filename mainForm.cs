@@ -439,11 +439,9 @@ namespace spt_mods_installer
 
                     if (extension == ".rar" || extension == ".zip" || extension == ".7z")
                     {
-                        Debug.WriteLine("success 1");
                         int largeArchive = 15;
                         if (doesArchiveExceedSize(file, largeArchive))
                         {
-                            Debug.WriteLine("success 2");
                             if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
                                 Environment.NewLine +
                                 "Do you wish to proceed?",
@@ -451,7 +449,6 @@ namespace spt_mods_installer
                                 MessageBoxButtons.YesNo) == DialogResult.Yes)
                             {
                                 extractArchive(file);
-                                Debug.WriteLine("success 3");
                             }
                         }
                         else
