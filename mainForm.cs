@@ -21,7 +21,7 @@ namespace spt_mods_installer
             public string compatibleTarkovVersion { get; set; }
         }
 
-        public string currentEnv = $"D:\\SPT Iterations\\SPT-AKI 3.9.0";
+        public string currentEnv = Environment.CurrentDirectory;
         public string bepInFolder = null;
         public string userFolder = null;
         public string sptName = null;
