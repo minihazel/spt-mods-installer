@@ -210,6 +210,7 @@
             // 
             // btnClearServerCache
             // 
+            btnClearServerCache.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btnClearServerCache.Location = new Point(754, 389);
             btnClearServerCache.Name = "btnClearServerCache";
             btnClearServerCache.Size = new Size(200, 40);
@@ -221,8 +222,8 @@
             // titleHistory
             // 
             titleHistory.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            titleHistory.Font = new Font("Bahnschrift Light", 10F);
-            titleHistory.ForeColor = Color.FromArgb(90, 90, 90);
+            titleHistory.Font = new Font("Bahnschrift", 14F);
+            titleHistory.ForeColor = Color.FromArgb(80, 80, 80);
             titleHistory.Location = new Point(3, 389);
             titleHistory.Name = "titleHistory";
             titleHistory.Size = new Size(967, 50);
