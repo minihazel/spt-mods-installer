@@ -217,6 +217,7 @@
             btnClearServerCache.TabIndex = 7;
             btnClearServerCache.Text = "🗑 Clear server cache";
             btnClearServerCache.UseVisualStyleBackColor = true;
+            btnClearServerCache.Visible = false;
             btnClearServerCache.Click += btnClearServerCache_Click;
             // 
             // titleHistory
