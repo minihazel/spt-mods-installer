@@ -43,6 +43,7 @@
             panelTitleName = new Label();
             panelSeparator1 = new Panel();
             panelDragDrop = new Panel();
+            btnClearServerCache = new Button();
             titleHistory = new Label();
             titleDragDrop = new Label();
             timerConfirmation = new System.Windows.Forms.Timer(components);
@@ -86,11 +87,11 @@
             notificationDelay.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             notificationDelay.Location = new Point(850, 52);
             notificationDelay.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
-            notificationDelay.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            notificationDelay.Minimum = new decimal(new int[] { 2, 0, 0, 0 });
             notificationDelay.Name = "notificationDelay";
             notificationDelay.Size = new Size(45, 25);
             notificationDelay.TabIndex = 9;
-            notificationDelay.Value = new decimal(new int[] { 3, 0, 0, 0 });
+            notificationDelay.Value = new decimal(new int[] { 5, 0, 0, 0 });
             // 
             // lblDelayTitle
             // 
@@ -197,6 +198,7 @@
             // 
             panelDragDrop.AllowDrop = true;
             panelDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelDragDrop.Controls.Add(btnClearServerCache);
             panelDragDrop.Controls.Add(titleHistory);
             panelDragDrop.Controls.Add(titleDragDrop);
             panelDragDrop.Location = new Point(12, 171);
@@ -205,6 +207,16 @@
             panelDragDrop.TabIndex = 2;
             panelDragDrop.DragDrop += panelDragDrop_DragDrop;
             panelDragDrop.DragEnter += panelDragDrop_DragEnter;
+            // 
+            // btnClearServerCache
+            // 
+            btnClearServerCache.Location = new Point(754, 389);
+            btnClearServerCache.Name = "btnClearServerCache";
+            btnClearServerCache.Size = new Size(200, 40);
+            btnClearServerCache.TabIndex = 7;
+            btnClearServerCache.Text = "🗑 Clear server cache";
+            btnClearServerCache.UseVisualStyleBackColor = true;
+            btnClearServerCache.Click += btnClearServerCache_Click;
             // 
             // titleHistory
             // 
@@ -280,5 +292,6 @@
         private Label lblDelayTitle;
         private Label lblDelayTitle2;
         private NumericUpDown notificationDelay;
+        private Button btnClearServerCache;
     }
 }

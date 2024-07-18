@@ -177,6 +177,7 @@ namespace spt_mods_installer
                 if (!userChecked)
                 {
                     searchUserManually(extractPath);
+                    completedTasks.Add($"Server mod of {fileName} installed");
                 }
 
                 titleHistory.Text = string.Join(Environment.NewLine, completedTasks);
@@ -184,6 +185,13 @@ namespace spt_mods_installer
                 int fullDelay = Convert.ToInt32(notificationDelay.Value) + 1000;
                 timerConfirmation.Interval = fullDelay;
                 timerConfirmation.Start();
+
+                string cacheFolder = Path.Combine(currentEnv, "user", "cache");
+                bool doesCacheExist = Directory.Exists(cacheFolder);
+                if (doesCacheExist)
+                {
+                    btnClearServerCache.Visible = true;
+                }
             }
 
             Directory.Delete(extractPath, true);
@@ -566,6 +574,24 @@ namespace spt_mods_installer
             timerConfirmation.Stop();
             timerConfirmation.Dispose();
             titleHistory.Text = "";
+        }
+
+        private void btnClearServerCache_Click(object sender, EventArgs e)
+        {
+            List<string> completedTasks = new List<string>();
+
+            string cacheFolder = Path.Combine(currentEnv, "user", "cache");
+            bool doesCacheExist = Directory.Exists(cacheFolder);
+            if (doesCacheExist)
+            {
+                Directory.Delete(cacheFolder, true);
+                completedTasks.Add($"Server cache cleared for the current installation.");
+                titleHistory.Text = string.Join(Environment.NewLine, completedTasks);
+
+                int fullDelay = Convert.ToInt32(notificationDelay.Value) + 1000;
+                timerConfirmation.Interval = fullDelay;
+                timerConfirmation.Start();
+            }
         }
     }
 }
