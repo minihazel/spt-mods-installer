@@ -47,6 +47,7 @@
             titleHistory = new Label();
             titleDragDrop = new Label();
             timerConfirmation = new System.Windows.Forms.Timer(components);
+            btnBrowseForMod = new Button();
             panelTitle.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)notificationDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).BeginInit();
@@ -198,6 +199,7 @@
             // 
             panelDragDrop.AllowDrop = true;
             panelDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelDragDrop.Controls.Add(btnBrowseForMod);
             panelDragDrop.Controls.Add(btnClearServerCache);
             panelDragDrop.Controls.Add(titleHistory);
             panelDragDrop.Controls.Add(titleDragDrop);
@@ -249,6 +251,18 @@
             timerConfirmation.Interval = 3000;
             timerConfirmation.Tick += timerConfirmation_Tick;
             // 
+            // btnBrowseForMod
+            // 
+            btnBrowseForMod.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnBrowseForMod.Location = new Point(754, 3);
+            btnBrowseForMod.Name = "btnBrowseForMod";
+            btnBrowseForMod.Size = new Size(200, 40);
+            btnBrowseForMod.TabIndex = 8;
+            btnBrowseForMod.Text = "📥 Browse for mod";
+            btnBrowseForMod.UseVisualStyleBackColor = true;
+            btnBrowseForMod.Visible = false;
+            btnBrowseForMod.Click += btnBrowseForMod_Click;
+            // 
             // mainForm
             // 
             AllowDrop = true;
@@ -295,5 +309,6 @@
         private Label lblDelayTitle2;
         private NumericUpDown notificationDelay;
         private Button btnClearServerCache;
+        private Button btnBrowseForMod;
     }
 }

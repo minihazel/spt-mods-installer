@@ -593,5 +593,36 @@ namespace spt_mods_installer
                 timerConfirmation.Start();
             }
         }
+
+        private void btnBrowseForMod_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog cf = new OpenFileDialog();
+            cf.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            cf.Multiselect = false;
+            cf.Title = "Select a mod (zip archive) to install";
+            cf.Filter = "Zip Archives (*.zip)|*.zip|(*.7z)|*.7z|Rar Archives (*.rar)|*.rar";
+
+            if (cf.ShowDialog() == DialogResult.OK)
+            {
+                string selectedFile = Path.GetFullPath(cf.FileName);
+
+                int largeArchive = 15;
+                if (doesArchiveExceedSize(selectedFile, largeArchive))
+                {
+                    if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
+                        Environment.NewLine +
+                        "Do you wish to proceed?",
+                        "Large archive detected",
+                        MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        extractArchive(selectedFile);
+                    }
+                }
+                else
+                {
+                    extractArchive(selectedFile);
+                }
+            }
+        }
     }
 }
