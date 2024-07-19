@@ -182,7 +182,7 @@ namespace spt_mods_installer
 
                 titleHistory.Text = string.Join(Environment.NewLine, completedTasks);
 
-                int fullDelay = Convert.ToInt32(notificationDelay.Value) + 1000;
+                int fullDelay = Convert.ToInt32(notificationDelay.Value) * 1000;
                 timerConfirmation.Interval = fullDelay;
                 timerConfirmation.Start();
 
@@ -588,7 +588,7 @@ namespace spt_mods_installer
                 completedTasks.Add($"Server cache cleared for the current installation.");
                 titleHistory.Text = string.Join(Environment.NewLine, completedTasks);
 
-                int fullDelay = Convert.ToInt32(notificationDelay.Value) + 1000;
+                int fullDelay = Convert.ToInt32(notificationDelay.Value) * 1000;
                 timerConfirmation.Interval = fullDelay;
                 timerConfirmation.Start();
             }
