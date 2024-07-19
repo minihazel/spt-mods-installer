@@ -43,11 +43,11 @@
             panelTitleName = new Label();
             panelSeparator1 = new Panel();
             panelDragDrop = new Panel();
+            btnBrowseForMod = new Button();
             btnClearServerCache = new Button();
             titleHistory = new Label();
             titleDragDrop = new Label();
             timerConfirmation = new System.Windows.Forms.Timer(components);
-            btnBrowseForMod = new Button();
             panelTitle.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)notificationDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).BeginInit();
@@ -210,6 +210,17 @@
             panelDragDrop.DragDrop += panelDragDrop_DragDrop;
             panelDragDrop.DragEnter += panelDragDrop_DragEnter;
             // 
+            // btnBrowseForMod
+            // 
+            btnBrowseForMod.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnBrowseForMod.Location = new Point(754, 3);
+            btnBrowseForMod.Name = "btnBrowseForMod";
+            btnBrowseForMod.Size = new Size(200, 40);
+            btnBrowseForMod.TabIndex = 8;
+            btnBrowseForMod.Text = "📥 Browse for mod";
+            btnBrowseForMod.UseVisualStyleBackColor = true;
+            btnBrowseForMod.Click += btnBrowseForMod_Click;
+            // 
             // btnClearServerCache
             // 
             btnClearServerCache.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
@@ -250,18 +261,6 @@
             // 
             timerConfirmation.Interval = 3000;
             timerConfirmation.Tick += timerConfirmation_Tick;
-            // 
-            // btnBrowseForMod
-            // 
-            btnBrowseForMod.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnBrowseForMod.Location = new Point(754, 3);
-            btnBrowseForMod.Name = "btnBrowseForMod";
-            btnBrowseForMod.Size = new Size(200, 40);
-            btnBrowseForMod.TabIndex = 8;
-            btnBrowseForMod.Text = "📥 Browse for mod";
-            btnBrowseForMod.UseVisualStyleBackColor = true;
-            btnBrowseForMod.Visible = false;
-            btnBrowseForMod.Click += btnBrowseForMod_Click;
             // 
             // mainForm
             // 
