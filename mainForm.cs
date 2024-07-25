@@ -182,7 +182,6 @@ namespace spt_mods_installer
                     searchUserManually(extractPath);
                     Debug.WriteLine($"success custom");
                 }
-
             }
 
             string[] files = Directory.GetFiles(extractPath);
@@ -192,7 +191,6 @@ namespace spt_mods_installer
                 {
                     File.Copy(files[0], Path.Combine(currentEnv, Path.GetFileName(files[0])), true);
                     Debug.WriteLine($"success custom file");
-                    completedTasks.Add($"{fileName} installed into {Path.GetFileName(currentEnv)}");
                 }
                 catch (Exception ex)
                 {
@@ -200,9 +198,11 @@ namespace spt_mods_installer
                 }
             }
 
+            completedTasks.Add($"{fileName} installed into {Path.GetFileName(currentEnv)}");
             titleHistory.Text = string.Join(Environment.NewLine, completedTasks);
-            Directory.Delete(extractPath, true);
             completedTasks.Clear();
+
+            Directory.Delete(extractPath, true);
         }
 
         private void detectModFolders(string originFolder)
@@ -377,7 +377,6 @@ namespace spt_mods_installer
                 {
                     string destinationFilePath = Path.Combine(destinationFolder, Path.GetFileName(file));
                     File.Copy(file, destinationFilePath, true);
-                    completedTasks.Add($"Client mod of {fileName} installed into {Path.GetFileName(currentEnv)}");
                 }
 
                 foreach (string subfolder in subfolders)
