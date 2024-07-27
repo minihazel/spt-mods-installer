@@ -116,14 +116,11 @@ namespace spt_mods_installer
                 {
                     foreach (var entry in archive.Entries)
                     {
-                        if (!entry.IsDirectory)
+                        entry.WriteToDirectory(extractPath, new ExtractionOptions
                         {
-                            entry.WriteToDirectory(extractPath, new ExtractionOptions
-                            {
-                                ExtractFullPath = true,
-                                Overwrite = true
-                            });
-                        }
+                            ExtractFullPath = true,
+                            Overwrite = true
+                        });
                     }
                 }
             }
@@ -370,25 +367,27 @@ namespace spt_mods_installer
                     Directory.CreateDirectory(destinationFolder);
                 }
 
-                string[] files = Directory.GetFiles(sourceFolder);
-                string[] subfolders = Directory.GetDirectories(sourceFolder);
-
-                foreach (string file in files)
+                foreach (string file in Directory.GetFiles(sourceFolder))
                 {
-                    string destinationFilePath = Path.Combine(destinationFolder, Path.GetFileName(file));
-                    File.Copy(file, destinationFilePath, true);
+                    string destFile = Path.Combine(destinationFolder, Path.GetFileName(file));
+                    File.Copy(file, destFile, true);
                 }
 
-                foreach (string subfolder in subfolders)
+                foreach (string subfolder in Directory.GetDirectories(sourceFolder))
                 {
-                    string destinationSubfolder = Path.Combine(destinationFolder, Path.GetFileName(subfolder));
-                    CopyFolder(subfolder, destinationSubfolder);
+                    string destSubfolder = Path.Combine(destinationFolder, Path.GetFileName(subfolder));
+                    CopyFolder(subfolder, destSubfolder);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Copy Error: {ex.Message}");
             }
+        }
+
+        static bool IsFolderEmpty(string folderPath)
+        {
+            return Directory.GetFiles(folderPath).Length == 0 && Directory.GetDirectories(folderPath).Length == 0;
         }
 
         static async Task CopyFolderAsync(string sourceFolder, string destinationFolder)
