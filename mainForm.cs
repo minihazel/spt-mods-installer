@@ -129,7 +129,7 @@ namespace spt_mods_installer
                 MessageBox.Show($"Extract error: {ex.Message}");
             }
 
-            if (extractPath != null )
+            if (extractPath != null)
             {
                 moveFolder(extractPath);
             }
@@ -658,6 +658,19 @@ namespace spt_mods_installer
                 {
                     extractArchive(selectedFile);
                 }
+            }
+        }
+
+        private void listHistory_MouseDown(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                listHistory.ClearSelected();
+                listHistory.SelectedIndex = -1;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
             }
         }
     }

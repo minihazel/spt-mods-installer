@@ -44,11 +44,11 @@
             panelTitleName = new Label();
             panelSeparator1 = new Panel();
             panelDragDrop = new Panel();
+            titleDragDrop = new Label();
+            listHistory = new ListBox();
             btnBrowseForMod = new Button();
             btnClearServerCache = new Button();
-            titleDragDrop = new Label();
             timerConfirmation = new System.Windows.Forms.Timer(components);
-            listHistory = new ListBox();
             panelTitle.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)notificationDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).BeginInit();
@@ -224,6 +224,32 @@
             panelDragDrop.DragDrop += panelDragDrop_DragDrop;
             panelDragDrop.DragEnter += panelDragDrop_DragEnter;
             // 
+            // titleDragDrop
+            // 
+            titleDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            titleDragDrop.Font = new Font("Bahnschrift Light", 10F);
+            titleDragDrop.ForeColor = Color.FromArgb(90, 90, 90);
+            titleDragDrop.Location = new Point(326, 191);
+            titleDragDrop.Name = "titleDragDrop";
+            titleDragDrop.Padding = new Padding(33, 0, 0, 0);
+            titleDragDrop.Size = new Size(320, 60);
+            titleDragDrop.TabIndex = 5;
+            titleDragDrop.Text = "📥 Drag and drop any archive\r\n\r\nSupported formats: .rar  /  .zip  /  .7z";
+            titleDragDrop.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // listHistory
+            // 
+            listHistory.BackColor = SystemColors.Control;
+            listHistory.BorderStyle = BorderStyle.None;
+            listHistory.Enabled = false;
+            listHistory.Font = new Font("Bahnschrift Light", 10F);
+            listHistory.FormattingEnabled = true;
+            listHistory.Location = new Point(40, 269);
+            listHistory.Name = "listHistory";
+            listHistory.Size = new Size(708, 160);
+            listHistory.TabIndex = 9;
+            listHistory.MouseDown += listHistory_MouseDown;
+            // 
             // btnBrowseForMod
             // 
             btnBrowseForMod.Anchor = AnchorStyles.Top | AnchorStyles.Right;
@@ -247,34 +273,10 @@
             btnClearServerCache.Visible = false;
             btnClearServerCache.Click += btnClearServerCache_Click;
             // 
-            // titleDragDrop
-            // 
-            titleDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            titleDragDrop.Font = new Font("Bahnschrift Light", 10F);
-            titleDragDrop.ForeColor = Color.FromArgb(90, 90, 90);
-            titleDragDrop.Location = new Point(326, 191);
-            titleDragDrop.Name = "titleDragDrop";
-            titleDragDrop.Padding = new Padding(33, 0, 0, 0);
-            titleDragDrop.Size = new Size(320, 60);
-            titleDragDrop.TabIndex = 5;
-            titleDragDrop.Text = "📥 Drag and drop any archive\r\n\r\nSupported formats: .rar  /  .zip  /  .7z";
-            titleDragDrop.TextAlign = ContentAlignment.MiddleCenter;
-            // 
             // timerConfirmation
             // 
             timerConfirmation.Interval = 3000;
             timerConfirmation.Tick += timerConfirmation_Tick;
-            // 
-            // listHistory
-            // 
-            listHistory.BackColor = SystemColors.Control;
-            listHistory.BorderStyle = BorderStyle.None;
-            listHistory.Font = new Font("Bahnschrift Light", 10F);
-            listHistory.FormattingEnabled = true;
-            listHistory.Location = new Point(40, 269);
-            listHistory.Name = "listHistory";
-            listHistory.Size = new Size(708, 160);
-            listHistory.TabIndex = 9;
             // 
             // mainForm
             // 
