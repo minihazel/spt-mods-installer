@@ -73,12 +73,12 @@ namespace spt_mods_installer
                                 string coreContent = File.ReadAllText(coreJson);
                                 sptCore? core = JsonSerializer.Deserialize<sptCore>(coreContent);
 
-                                string? akiVersion = core?.sptVersion;
+                                string? sptVersion = core?.sptVersion;
                                 string? projectName = core?.projectName;
                                 isValidLocation = true;
-                                sptName = $"{projectName} {akiVersion}";
+                                sptName = $"{projectName} {sptVersion}";
 
-                                panelTitleDetector.Text = $"Detected {projectName} {akiVersion}" + Environment.NewLine +
+                                panelTitleDetector.Text = $"Detected {projectName} {sptVersion}" + Environment.NewLine +
                                                           Path.GetFileName(currentEnv);
                                 panelTitleDetector.ForeColor = Color.DodgerBlue;
                                 titleDragDrop.Text = "📥 Drag and drop any archive";
