@@ -43,11 +43,13 @@
             panelTitleName = new Label();
             panelSeparator1 = new Panel();
             panelDragDrop = new Panel();
+            listHistory = new ListBox();
             btnBrowseForMod = new Button();
             btnClearServerCache = new Button();
             titleHistory = new Label();
             titleDragDrop = new Label();
             timerConfirmation = new System.Windows.Forms.Timer(components);
+            chkDisplayWarning = new CheckBox();
             panelTitle.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)notificationDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).BeginInit();
@@ -58,6 +60,7 @@
             // panelTitle
             // 
             panelTitle.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            panelTitle.Controls.Add(chkDisplayWarning);
             panelTitle.Controls.Add(lblDelayTitle2);
             panelTitle.Controls.Add(notificationDelay);
             panelTitle.Controls.Add(lblDelayTitle);
@@ -76,8 +79,8 @@
             lblDelayTitle2.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             lblDelayTitle2.AutoSize = true;
             lblDelayTitle2.Font = new Font("Bahnschrift Light", 10F);
-            lblDelayTitle2.ForeColor = Color.FromArgb(50, 50, 50);
-            lblDelayTitle2.Location = new Point(897, 56);
+            lblDelayTitle2.ForeColor = SystemColors.ControlText;
+            lblDelayTitle2.Location = new Point(896, 55);
             lblDelayTitle2.Name = "lblDelayTitle2";
             lblDelayTitle2.Size = new Size(15, 17);
             lblDelayTitle2.TabIndex = 10;
@@ -99,8 +102,8 @@
             lblDelayTitle.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             lblDelayTitle.AutoSize = true;
             lblDelayTitle.Font = new Font("Bahnschrift Light", 10F);
-            lblDelayTitle.ForeColor = Color.FromArgb(50, 50, 50);
-            lblDelayTitle.Location = new Point(679, 56);
+            lblDelayTitle.ForeColor = SystemColors.ControlText;
+            lblDelayTitle.Location = new Point(679, 55);
             lblDelayTitle.Name = "lblDelayTitle";
             lblDelayTitle.Size = new Size(165, 17);
             lblDelayTitle.TabIndex = 8;
@@ -199,6 +202,7 @@
             // 
             panelDragDrop.AllowDrop = true;
             panelDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelDragDrop.Controls.Add(listHistory);
             panelDragDrop.Controls.Add(btnBrowseForMod);
             panelDragDrop.Controls.Add(btnClearServerCache);
             panelDragDrop.Controls.Add(titleHistory);
@@ -209,6 +213,17 @@
             panelDragDrop.TabIndex = 2;
             panelDragDrop.DragDrop += panelDragDrop_DragDrop;
             panelDragDrop.DragEnter += panelDragDrop_DragEnter;
+            // 
+            // listHistory
+            // 
+            listHistory.BackColor = SystemColors.Control;
+            listHistory.BorderStyle = BorderStyle.FixedSingle;
+            listHistory.FormattingEnabled = true;
+            listHistory.ItemHeight = 18;
+            listHistory.Location = new Point(40, 3);
+            listHistory.Name = "listHistory";
+            listHistory.Size = new Size(243, 434);
+            listHistory.TabIndex = 9;
             // 
             // btnBrowseForMod
             // 
@@ -249,10 +264,10 @@
             titleDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             titleDragDrop.Font = new Font("Bahnschrift Light", 10F);
             titleDragDrop.ForeColor = Color.FromArgb(90, 90, 90);
-            titleDragDrop.Location = new Point(3, 190);
+            titleDragDrop.Location = new Point(311, 191);
             titleDragDrop.Name = "titleDragDrop";
             titleDragDrop.Padding = new Padding(33, 0, 0, 0);
-            titleDragDrop.Size = new Size(967, 60);
+            titleDragDrop.Size = new Size(350, 60);
             titleDragDrop.TabIndex = 5;
             titleDragDrop.Text = "📥 Drag and drop any archive\r\n\r\nSupported formats: .rar  /  .zip  /  .7z";
             titleDragDrop.TextAlign = ContentAlignment.MiddleCenter;
@@ -261,6 +276,18 @@
             // 
             timerConfirmation.Interval = 3000;
             timerConfirmation.Tick += timerConfirmation_Tick;
+            // 
+            // chkDisplayWarning
+            // 
+            chkDisplayWarning.AutoSize = true;
+            chkDisplayWarning.CheckAlign = ContentAlignment.MiddleRight;
+            chkDisplayWarning.Font = new Font("Bahnschrift Light", 10F);
+            chkDisplayWarning.Location = new Point(645, 83);
+            chkDisplayWarning.Name = "chkDisplayWarning";
+            chkDisplayWarning.Size = new Size(250, 21);
+            chkDisplayWarning.TabIndex = 11;
+            chkDisplayWarning.Text = "Display large-size archive warning";
+            chkDisplayWarning.UseVisualStyleBackColor = true;
             // 
             // mainForm
             // 
@@ -309,5 +336,7 @@
         private NumericUpDown notificationDelay;
         private Button btnClearServerCache;
         private Button btnBrowseForMod;
+        private ListBox listHistory;
+        private CheckBox chkDisplayWarning;
     }
 }

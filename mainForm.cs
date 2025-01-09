@@ -14,18 +14,18 @@ namespace spt_mods_installer
 
     public partial class mainForm : Form
     {
-        public class akiCore
+        public class sptCore
         {
-            public string sptVersion { get; set; }
-            public string projectName { get; set; }
-            public string compatibleTarkovVersion { get; set; }
+            public string? sptVersion { get; set; }
+            public string? projectName { get; set; }
+            public string? compatibleTarkovVersion { get; set; }
         }
 
         public string currentEnv = Environment.CurrentDirectory;
-        public string bepInFolder = null;
-        public string userFolder = null;
-        public string sptName = null;
-        List<string> completedTasks = null;
+        public string? bepInFolder = null;
+        public string? userFolder = null;
+        public string? sptName = null;
+        List<string>? completedTasks = null;
 
         bool isValidLocation = false;
         bool isConditionsMet = false;
@@ -71,10 +71,10 @@ namespace spt_mods_installer
                             if (coreJsonExists)
                             {
                                 string coreContent = File.ReadAllText(coreJson);
-                                akiCore core = JsonSerializer.Deserialize<akiCore>(coreContent);
+                                sptCore? core = JsonSerializer.Deserialize<sptCore>(coreContent);
 
-                                string akiVersion = core.sptVersion;
-                                string projectName = core.projectName;
+                                string? akiVersion = core?.sptVersion;
+                                string? projectName = core?.projectName;
                                 isValidLocation = true;
                                 sptName = $"{projectName} {akiVersion}";
 
@@ -97,7 +97,7 @@ namespace spt_mods_installer
 
         private void extractArchive(string filepath)
         {
-            string extractPath = null;
+            string? extractPath = null;
 
             try
             {
@@ -129,7 +129,10 @@ namespace spt_mods_installer
                 MessageBox.Show($"Extract error: {ex.Message}");
             }
 
-            moveFolder(extractPath);
+            if (extractPath != null )
+            {
+                moveFolder(extractPath);
+            }
         }
 
         private void moveFolder(string extractPath)
@@ -191,12 +194,14 @@ namespace spt_mods_installer
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine(ex);
                     Debug.WriteLine("[CUSTOM FILE] Failed to copy single file, continuing...");
                 }
             }
 
-            completedTasks.Add($"{fileName} installed into {Path.GetFileName(currentEnv)}");
-            titleHistory.Text = string.Join(Environment.NewLine, completedTasks);
+            string addedItem = $"{fileName} installed into {Path.GetFileName(currentEnv)}";
+            completedTasks.Add(addedItem);
+            listHistory.Items.Add(addedItem);
             completedTasks.Clear();
 
             Directory.Delete(extractPath, true);
@@ -236,6 +241,7 @@ namespace spt_mods_installer
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex);
                 return false; // Exception means that the file doesn't exceed the size limit
             }
         }
@@ -303,7 +309,7 @@ namespace spt_mods_installer
                     if (packageFileExists)
                     {
                         copyUser(subfolder, false);
-                        completedTasks.Add($"Server mod of {fileName} installed into {Path.GetFileName(currentEnv)}");
+                        completedTasks?.Add($"Server mod of {fileName} installed into {Path.GetFileName(currentEnv)}");
                         isConditionsMet = true;
                         break;
                     }
@@ -438,44 +444,60 @@ namespace spt_mods_installer
 
         private void panelDragDrop_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop) && isValidLocation)
+            if (e.Data != null)
             {
-                e.Effect = DragDropEffects.Copy;
+                if (e.Data.GetDataPresent(DataFormats.FileDrop) && isValidLocation)
+                {
+                    e.Effect = DragDropEffects.Copy;
+                }
             }
         }
 
         private void panelDragDrop_DragDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop) && isValidLocation)
+            listHistory.Items.Clear();
+
+            if (e.Data != null)
             {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-
-                foreach (string file in files)
+                if (e.Data.GetDataPresent(DataFormats.FileDrop) && isValidLocation)
                 {
-                    string extension = Path.GetExtension(file).ToLower();
-
-                    if (extension == ".rar" || extension == ".zip" || extension == ".7z")
+                    if (e.Data.GetData(DataFormats.FileDrop) is string[] files)
                     {
-                        int largeArchive = 15;
-                        if (doesArchiveExceedSize(file, largeArchive))
+                        foreach (string file in files)
                         {
-                            if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
-                                Environment.NewLine +
-                                "Do you wish to proceed?",
-                                "Large archive detected",
-                                MessageBoxButtons.YesNo) == DialogResult.Yes)
+                            string extension = Path.GetExtension(file).ToLower();
+
+                            if (extension == ".rar" || extension == ".zip" || extension == ".7z")
                             {
-                                extractArchive(file);
+                                if (chkDisplayWarning.Checked)
+                                {
+                                    int largeArchive = 15;
+                                    if (doesArchiveExceedSize(file, largeArchive))
+                                    {
+                                        if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
+                                            Environment.NewLine +
+                                            "Do you wish to proceed?",
+                                            "Large archive detected",
+                                            MessageBoxButtons.YesNo) == DialogResult.Yes)
+                                        {
+                                            extractArchive(file);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        extractArchive(file);
+                                    }
+                                }
+                                else
+                                {
+                                    extractArchive(file);
+                                }
+                            }
+                            else
+                            {
+                                MessageBox.Show("Only (rar, zip, 7z) formats are currently supported", "SPT Mod Installer", MessageBoxButtons.OK);
                             }
                         }
-                        else
-                        {
-                            extractArchive(file);
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Only (rar, zip, 7z) formats are currently supported", "SPT Mod Installer", MessageBoxButtons.OK);
                     }
                 }
             }
@@ -496,32 +518,39 @@ namespace spt_mods_installer
             }
             else if (selected == 1)
             {
-                string plugins = Path.Combine(bepInFolder, "plugins");
-                bool pluginsExists = Directory.Exists(plugins);
-                if (pluginsExists)
+                if (!string.IsNullOrEmpty(bepInFolder))
                 {
-                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    string? plugins = Path.Combine(bepInFolder, "plugins");
+                    bool pluginsExists = Directory.Exists(plugins);
+                    if (pluginsExists)
                     {
-                        FileName = plugins,
-                        UseShellExecute = true
-                    };
+                        ProcessStartInfo startInfo = new ProcessStartInfo
+                        {
+                            FileName = plugins,
+                            UseShellExecute = true
+                        };
 
-                    Process.Start(startInfo);
+                        Process.Start(startInfo);
+                    }
                 }
             }
             else if (selected == 2)
             {
-                string mods = Path.Combine(userFolder, "mods");
-                bool modsExists = Directory.Exists(mods);
-                if (modsExists)
-                {
-                    ProcessStartInfo startInfo = new ProcessStartInfo
-                    {
-                        FileName = mods,
-                        UseShellExecute = true
-                    };
 
-                    Process.Start(startInfo);
+                if (!string.IsNullOrEmpty(userFolder))
+                {
+                    string mods = Path.Combine(userFolder, "mods");
+                    bool modsExists = Directory.Exists(mods);
+                    if (modsExists)
+                    {
+                        ProcessStartInfo startInfo = new ProcessStartInfo
+                        {
+                            FileName = mods,
+                            UseShellExecute = true
+                        };
+
+                        Process.Start(startInfo);
+                    }
                 }
             }
 
@@ -582,7 +611,6 @@ namespace spt_mods_installer
         {
             timerConfirmation.Stop();
             timerConfirmation.Dispose();
-            titleHistory.Text = "";
         }
 
         private void btnClearServerCache_Click(object sender, EventArgs e)
@@ -595,7 +623,6 @@ namespace spt_mods_installer
             {
                 Directory.Delete(cacheFolder, true);
                 completedTasks.Add($"Server cache cleared for the current installation.");
-                titleHistory.Text = string.Join(Environment.NewLine, completedTasks);
 
                 int fullDelay = Convert.ToInt32(notificationDelay.Value) * 1000;
                 timerConfirmation.Interval = fullDelay;
