@@ -31,6 +31,7 @@
             components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
             panelTitle = new Panel();
+            chkDisplayWarning = new CheckBox();
             lblDelayTitle2 = new Label();
             notificationDelay = new NumericUpDown();
             lblDelayTitle = new Label();
@@ -43,13 +44,11 @@
             panelTitleName = new Label();
             panelSeparator1 = new Panel();
             panelDragDrop = new Panel();
-            listHistory = new ListBox();
             btnBrowseForMod = new Button();
             btnClearServerCache = new Button();
-            titleHistory = new Label();
             titleDragDrop = new Label();
             timerConfirmation = new System.Windows.Forms.Timer(components);
-            chkDisplayWarning = new CheckBox();
+            listHistory = new ListBox();
             panelTitle.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)notificationDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).BeginInit();
@@ -73,6 +72,18 @@
             panelTitle.Name = "panelTitle";
             panelTitle.Size = new Size(953, 109);
             panelTitle.TabIndex = 0;
+            // 
+            // chkDisplayWarning
+            // 
+            chkDisplayWarning.AutoSize = true;
+            chkDisplayWarning.CheckAlign = ContentAlignment.MiddleRight;
+            chkDisplayWarning.Font = new Font("Bahnschrift Light", 10F);
+            chkDisplayWarning.Location = new Point(645, 83);
+            chkDisplayWarning.Name = "chkDisplayWarning";
+            chkDisplayWarning.Size = new Size(250, 21);
+            chkDisplayWarning.TabIndex = 11;
+            chkDisplayWarning.Text = "Display large-size archive warning";
+            chkDisplayWarning.UseVisualStyleBackColor = true;
             // 
             // lblDelayTitle2
             // 
@@ -202,28 +213,16 @@
             // 
             panelDragDrop.AllowDrop = true;
             panelDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelDragDrop.Controls.Add(titleDragDrop);
             panelDragDrop.Controls.Add(listHistory);
             panelDragDrop.Controls.Add(btnBrowseForMod);
             panelDragDrop.Controls.Add(btnClearServerCache);
-            panelDragDrop.Controls.Add(titleHistory);
-            panelDragDrop.Controls.Add(titleDragDrop);
             panelDragDrop.Location = new Point(12, 171);
             panelDragDrop.Name = "panelDragDrop";
             panelDragDrop.Size = new Size(973, 442);
             panelDragDrop.TabIndex = 2;
             panelDragDrop.DragDrop += panelDragDrop_DragDrop;
             panelDragDrop.DragEnter += panelDragDrop_DragEnter;
-            // 
-            // listHistory
-            // 
-            listHistory.BackColor = SystemColors.Control;
-            listHistory.BorderStyle = BorderStyle.FixedSingle;
-            listHistory.FormattingEnabled = true;
-            listHistory.ItemHeight = 18;
-            listHistory.Location = new Point(40, 3);
-            listHistory.Name = "listHistory";
-            listHistory.Size = new Size(243, 434);
-            listHistory.TabIndex = 9;
             // 
             // btnBrowseForMod
             // 
@@ -248,26 +247,15 @@
             btnClearServerCache.Visible = false;
             btnClearServerCache.Click += btnClearServerCache_Click;
             // 
-            // titleHistory
-            // 
-            titleHistory.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            titleHistory.Font = new Font("Bahnschrift", 14F);
-            titleHistory.ForeColor = Color.FromArgb(80, 80, 80);
-            titleHistory.Location = new Point(3, 389);
-            titleHistory.Name = "titleHistory";
-            titleHistory.Size = new Size(967, 50);
-            titleHistory.TabIndex = 6;
-            titleHistory.TextAlign = ContentAlignment.BottomLeft;
-            // 
             // titleDragDrop
             // 
             titleDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             titleDragDrop.Font = new Font("Bahnschrift Light", 10F);
             titleDragDrop.ForeColor = Color.FromArgb(90, 90, 90);
-            titleDragDrop.Location = new Point(311, 191);
+            titleDragDrop.Location = new Point(326, 191);
             titleDragDrop.Name = "titleDragDrop";
             titleDragDrop.Padding = new Padding(33, 0, 0, 0);
-            titleDragDrop.Size = new Size(350, 60);
+            titleDragDrop.Size = new Size(320, 60);
             titleDragDrop.TabIndex = 5;
             titleDragDrop.Text = "📥 Drag and drop any archive\r\n\r\nSupported formats: .rar  /  .zip  /  .7z";
             titleDragDrop.TextAlign = ContentAlignment.MiddleCenter;
@@ -277,17 +265,16 @@
             timerConfirmation.Interval = 3000;
             timerConfirmation.Tick += timerConfirmation_Tick;
             // 
-            // chkDisplayWarning
+            // listHistory
             // 
-            chkDisplayWarning.AutoSize = true;
-            chkDisplayWarning.CheckAlign = ContentAlignment.MiddleRight;
-            chkDisplayWarning.Font = new Font("Bahnschrift Light", 10F);
-            chkDisplayWarning.Location = new Point(645, 83);
-            chkDisplayWarning.Name = "chkDisplayWarning";
-            chkDisplayWarning.Size = new Size(250, 21);
-            chkDisplayWarning.TabIndex = 11;
-            chkDisplayWarning.Text = "Display large-size archive warning";
-            chkDisplayWarning.UseVisualStyleBackColor = true;
+            listHistory.BackColor = SystemColors.Control;
+            listHistory.BorderStyle = BorderStyle.None;
+            listHistory.Font = new Font("Bahnschrift Light", 10F);
+            listHistory.FormattingEnabled = true;
+            listHistory.Location = new Point(40, 269);
+            listHistory.Name = "listHistory";
+            listHistory.Size = new Size(708, 160);
+            listHistory.TabIndex = 9;
             // 
             // mainForm
             // 
@@ -329,14 +316,13 @@
         private Label titleDragDrop;
         private ComboBox dropdownOpen;
         private Button btnThemeSwitch;
-        private Label titleHistory;
         private System.Windows.Forms.Timer timerConfirmation;
         private Label lblDelayTitle;
         private Label lblDelayTitle2;
         private NumericUpDown notificationDelay;
         private Button btnClearServerCache;
         private Button btnBrowseForMod;
-        private ListBox listHistory;
         private CheckBox chkDisplayWarning;
+        private ListBox listHistory;
     }
 }
