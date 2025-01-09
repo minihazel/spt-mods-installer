@@ -75,6 +75,7 @@
             // 
             // chkDisplayWarning
             // 
+            chkDisplayWarning.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             chkDisplayWarning.AutoSize = true;
             chkDisplayWarning.CheckAlign = ContentAlignment.MiddleRight;
             chkDisplayWarning.Font = new Font("Bahnschrift Light", 10F);
@@ -239,6 +240,7 @@
             // 
             // listHistory
             // 
+            listHistory.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listHistory.BackColor = SystemColors.Control;
             listHistory.BorderStyle = BorderStyle.None;
             listHistory.Enabled = false;
