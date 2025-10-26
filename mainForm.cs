@@ -24,7 +24,7 @@ namespace spt_mods_installer
         }
 
         // public string currentEnv = Environment.CurrentDirectory;
-        public static string currentEnv = "D:\\SPT Iterations\\3.11 testing";
+        public static string currentEnv = "D:\\SPT Iterations\\4.0.0 Host";
         public static string? bepInFolder = null;
         public static string? userFolder = null;
         public static string? sptDataFolder = null;
@@ -221,6 +221,24 @@ namespace spt_mods_installer
                 string user_path = Path.Join(extractPath, "SPT");
                 string BepInEx_path = Path.Join(extractPath, "BepInEx");
 
+                List<string> otherFolders = unknownFolders(extractPath);
+                for (int i = 0; i < otherFolders.Count; i++)
+                {
+                    string unknownName = Path.GetFileName(otherFolders[i]);
+                    string unknown_path = Path.Join(extractPath, unknownName);
+                    string bepInPath = Path.Join(bepInFolder, "plugins");
+
+                    try
+                    {
+                        CopyFolder(unknown_path, Path.Join(bepInPath, Path.GetFileName(unknownName)));
+                        Debug.WriteLine($"success unknown folder");
+                    }
+                    catch
+                    {
+                        Debug.WriteLine("[STANDARD] No unknown folder detected, continuing...");
+                    }
+                }
+
                 // server mod
                 try
                 {
@@ -281,6 +299,41 @@ namespace spt_mods_installer
                 Debug.WriteLine(ex);
                 return false; // Exception means that the file doesn't exceed the size limit
             }
+        }
+
+        private static List<string> unknownFolders(string originFolder)
+        {
+            string[] excludedFolders = { "SPT", "BepInEx" };
+            List<string> items = new List<string>();
+
+            try
+            {
+                string[] subFolders = Directory.GetDirectories(originFolder);
+                for (int i = 0; i < subFolders.Length; i++)
+                {
+                    string folderName = Path.GetFileName(subFolders[i]);
+                    string fullFolder = subFolders[i];
+
+                    bool isExcludedFolder = excludedFolders.Any(name =>
+                        name.Equals(folderName, StringComparison.OrdinalIgnoreCase)
+                    );
+
+                    if (!isExcludedFolder)
+                    {
+                        items.Add(fullFolder);
+                    }
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                Debug.WriteLine("Error: folder not found: " + originFolder);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
+            return items;
         }
 
         private static bool areThereMiscFiles(string originFolder)
