@@ -8,6 +8,9 @@ using SharpCompress.Archives.SevenZip;
 using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using Microsoft.VisualBasic.Devices;
+using Timer = System.Windows.Forms.Timer;
+using System.Drawing.Drawing2D;
+using System.Transactions;
 
 namespace spt_mods_installer
 {
@@ -27,12 +30,12 @@ namespace spt_mods_installer
         }
 
         // public string currentEnv = Environment.CurrentDirectory;
-        public string currentEnv = "D:\\SPT Iterations\\4.0.0 Host";
-        public string? bepInFolder = null;
-        public string? userFolder = null;
-        public string? sptDataFolder = null;
-        public string? sptName = null;
-        public string? sptExecutable = null;
+        public static string currentEnv = "D:\\SPT Iterations\\4.0.0 Host";
+        public static string? bepInFolder = null;
+        public static string? userFolder = null;
+        public static string? sptDataFolder = null;
+        public static string? sptName = null;
+        public static string? sptExecutable = null;
         List<string>? completedTasks = null;
 
         public Color darkMode = Color.FromArgb(38, 41, 44);
@@ -75,6 +78,26 @@ namespace spt_mods_installer
             {
                 return "Error reading version: " + ex.Message.ToString();
             }
+        }
+
+        public static bool isPost400Release(string assemblyPath)
+        {
+            bool assemblyPathExists = Directory.Exists(assemblyPath);
+            if (assemblyPathExists)
+            {
+                string sptFolder = Path.Join(assemblyPath, "SPT");
+                bool sptFolderExists = Directory.Exists(sptFolder);
+                if (sptFolderExists) // >4.0
+                {
+                    return true;
+                }
+                else // <3.11
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void loadDetection()
@@ -163,8 +186,8 @@ namespace spt_mods_installer
 
             try
             {
-                // string extractPath = Path.Combine(Path.GetDirectoryName(filepath), Path.GetFileNameWithoutExtension(filepath));
-                extractPath = Path.Combine(currentEnv, Path.GetFileNameWithoutExtension(filepath));
+                // string extractPath = Path.Join(Path.GetDirectoryName(filepath), Path.GetFileNameWithoutExtension(filepath));
+                extractPath = Path.Join(currentEnv, Path.GetFileNameWithoutExtension(filepath));
 
                 if (!Directory.Exists(extractPath))
                 {
@@ -203,11 +226,15 @@ namespace spt_mods_installer
             timerConfirmation.Interval = fullDelay;
             timerConfirmation.Start();
 
-            string cacheFolder = Path.Combine(currentEnv, "user", "cache");
-            bool doesCacheExist = Directory.Exists(cacheFolder);
-            if (doesCacheExist)
+            if (!isPost400Release(currentEnv))
             {
-                btnClearServerCache.Visible = true;
+                string cacheFolder = string.Empty;
+                cacheFolder = Path.Join(currentEnv, "user", "cache");
+                bool doesCacheExist = Directory.Exists(cacheFolder);
+                if (doesCacheExist)
+                {
+                    btnClearServerCache.Visible = true;
+                }
             }
 
             completedTasks = new List<string>();
@@ -216,13 +243,23 @@ namespace spt_mods_installer
             bool doesFolderExist = Directory.Exists(extractPath);
             if (doesFolderExist)
             {
-                string user_path = Path.Combine(extractPath, "user");
-                string BepInEx_path = Path.Combine(extractPath, "BepInEx");
+                string user_path = string.Empty;
+
+                if (isPost400Release(currentEnv))
+                {
+                    user_path = Path.Join(extractPath, "SPT", "user");
+                }
+                else
+                {
+                    user_path = Path.Join(extractPath, "user");
+                }
+
+                string BepInEx_path = Path.Join(extractPath, "BepInEx");
 
                 try // server mods
                 {
-                    CopyFolder(user_path, Path.Combine(currentEnv, Path.GetFileName(user_path)));
-                    Debug.WriteLine($"success user/mods");
+                    CopyFolder(user_path, Path.Join(currentEnv, Path.GetFileName(user_path)));
+                    Debug.WriteLine($"success server side folder");
                 }
                 catch
                 {
@@ -231,8 +268,8 @@ namespace spt_mods_installer
 
                 try // client mods
                 {
-                    CopyFolder(BepInEx_path, Path.Combine(currentEnv, Path.GetFileName(BepInEx_path)));
-                    Debug.WriteLine($"success BepInEx");
+                    CopyFolder(BepInEx_path, Path.Join(currentEnv, Path.GetFileName(BepInEx_path)));
+                    Debug.WriteLine($"success BepInEx plugin");
                 }
                 catch
                 {
@@ -242,33 +279,64 @@ namespace spt_mods_installer
                 if (!Directory.Exists(user_path))
                 {
                     searchUserManually(extractPath);
-                    Debug.WriteLine($"success custom");
+                    Debug.WriteLine($"success manual search");
                 }
             }
 
             string[] files = Directory.GetFiles(extractPath);
-            if (files.Length == 1)
+            if (files.Length > 0)
             {
-                try
+                for (int i = 0; i < files.Length; i++)
                 {
-                    File.Copy(files[0], Path.Combine(currentEnv, Path.GetFileName(files[0])), true);
-                    Debug.WriteLine($"success custom file");
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex);
-                    Debug.WriteLine("[CUSTOM FILE] Failed to copy single file, continuing...");
+                    string bepPath = Path.Join(bepInFolder, "plugins");
+
+                    if (Path.GetExtension(files[i]) == ".dll")
+                    {
+                        try
+                        {
+                            File.Copy(files[i], Path.Join(bepPath, Path.GetFileName(files[0])), true);
+                            Debug.WriteLine($"Successfully copied file " + Path.GetFileName(files[i]));
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex);
+                            Debug.WriteLine("[CUSTOM FILE] Failed to copy file " + Path.GetFileName(files[i]) + ", continuing...");
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            File.Copy(files[i], Path.Join(currentEnv, Path.GetFileName(files[0])), true);
+                            Debug.WriteLine($"Successfully copied file " + Path.GetFileName(files[i]));
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex);
+                            Debug.WriteLine("[CUSTOM FILE] Failed to copy file " + Path.GetFileName(files[i]) + ", continuing...");
+                        }
+                    }
                 }
             }
 
             string addedItem = $"{fileName} installed into {Path.GetFileName(currentEnv)}";
             completedTasks.Add(addedItem);
             listHistory.Items.Add(addedItem);
-            completedTasks.Clear();
 
+            Timer tmr = new Timer();
+            tmr.Interval = 3000;
+            tmr.Tick += (sender, e) =>
+            {
+                tmr.Stop();
+                tmr.Dispose();
+                listHistory.Items.Clear();
+            };
+
+            completedTasks.Clear();
             Directory.Delete(extractPath, true);
         }
 
+        /*
         private void detectModFolders(string originFolder)
         {
             searchBep(originFolder);
@@ -290,6 +358,7 @@ namespace spt_mods_installer
                 MessageBox.Show($"{currentMod} could not be installed. Make sure it\'s a valid mod, then try again", "SPT Mod Installer", MessageBoxButtons.OK);
             }
         }
+        */
 
         static bool doesArchiveExceedSize(string filePath, int maxSizeInMegabytes)
         {
@@ -310,7 +379,7 @@ namespace spt_mods_installer
 
         private void searchBep(string originFolder)
         {
-            string keyword = "bepinex";
+            string keyword = "BepInEx";
 
             try
             {
@@ -319,7 +388,7 @@ namespace spt_mods_installer
                 {
                     if (Path.GetFileNameWithoutExtension(subfolder).ToLower() == keyword)
                     {
-                        copyBepInEx(subfolder);
+                        copyBepInEx(subfolder, false);
                         break;
                     }
                     else
@@ -358,15 +427,39 @@ namespace spt_mods_installer
 
         private void searchUserManually(string originFolder)
         {
-            string fileName = Path.GetFileNameWithoutExtension(originFolder);
-            string keyword = "package.json";
+            string searchPattern = string.Empty;
+            // "package.json" is pre-4.0
 
-            try
+            if (isPost400Release(currentEnv))
             {
+                searchPattern = "*.dll";
+                string[] subFolders = Directory.GetDirectories(originFolder);
+                for (int i = 0; i < subFolders.Length; i++)
+                {
+                    string[] subFolderFiles = Directory.GetFiles(
+                        subFolders[i],
+                        searchPattern,
+                        SearchOption.TopDirectoryOnly
+                    );
+
+                    if (subFolderFiles.Length > 0)
+                    {
+                        string pluginsSubFolderName = subFolders[i];
+                        string folderName = Path.GetFileName(subFolderFiles[i]);
+                        copyBepInEx(pluginsSubFolderName, true);
+                        completedTasks?.Add($"BepInEx plugin {folderName} installed into {Path.GetFileName(currentEnv)}");
+                        isConditionsMet = true;
+                    }
+                }
+            }
+            else
+            {
+                searchPattern = "package.json";
+                string fileName = Path.GetFileNameWithoutExtension(originFolder);
                 string[] subfolders = Directory.GetDirectories(originFolder);
                 foreach (string subfolder in subfolders)
                 {
-                    string packageFile = Path.Combine(subfolder, keyword);
+                    string packageFile = Path.Combine(subfolder, searchPattern);
                     bool packageFileExists = File.Exists(packageFile);
                     if (packageFileExists)
                     {
@@ -381,15 +474,21 @@ namespace spt_mods_installer
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"User folder search error: {ex.Message}");
-            }
         }
 
-        private void copyBepInEx(string originalFolder)
+        private void copyBepInEx(string originalFolder, bool is400)
         {
-            string originalBepIn = Path.Combine(currentEnv, "bepinex");
+            string originalBepIn = string.Empty;
+
+            if (is400)
+            {
+                originalBepIn = Path.Join(bepInFolder, "plugins");
+            }
+            else
+            {
+                originalBepIn = Path.Join(currentEnv, "BepInEx");
+            }
+            
             CopyFolder(originalFolder, originalBepIn);
             isConditionsMet = true;
         }
@@ -400,15 +499,15 @@ namespace spt_mods_installer
             {
                 string originalFolderName = Path.GetFileNameWithoutExtension(originalFolder);
 
-                string originalUser = Path.Combine(currentEnv, "user");
+                string originalUser = Path.Join(currentEnv, "user");
                 bool originalUserExists = Directory.Exists(originalUser);
                 if (originalUserExists)
                 {
-                    string originalMods = Path.Combine(originalUser, "mods");
+                    string originalMods = Path.Join(originalUser, "mods");
                     bool originalModsExists = Directory.Exists(originalMods);
                     if (originalModsExists)
                     {
-                        string fullModPath = Path.Combine(originalMods, originalFolderName);
+                        string fullModPath = Path.Join(originalMods, originalFolderName);
                         CopyFolder(originalFolder, fullModPath);
                         isConditionsMet = true;
                     }
@@ -416,7 +515,7 @@ namespace spt_mods_installer
             }
             else
             {
-                string originalUser = Path.Combine(currentEnv, "user");
+                string originalUser = Path.Join(currentEnv, "user");
                 bool originalUserExists = Directory.Exists(originalUser);
                 if (originalUserExists)
                 {
@@ -437,13 +536,13 @@ namespace spt_mods_installer
 
                 foreach (string file in Directory.GetFiles(sourceFolder))
                 {
-                    string destFile = Path.Combine(destinationFolder, Path.GetFileName(file));
+                    string destFile = Path.Join(destinationFolder, Path.GetFileName(file));
                     File.Copy(file, destFile, true);
                 }
 
                 foreach (string subfolder in Directory.GetDirectories(sourceFolder))
                 {
-                    string destSubfolder = Path.Combine(destinationFolder, Path.GetFileName(subfolder));
+                    string destSubfolder = Path.Join(destinationFolder, Path.GetFileName(subfolder));
                     CopyFolder(subfolder, destSubfolder);
                 }
             }
@@ -470,7 +569,7 @@ namespace spt_mods_installer
                 string[] files = Directory.GetFiles(sourceFolder);
                 string[] subfolders = Directory.GetDirectories(sourceFolder);
                 await Task.WhenAll(files.Select(file => CopyFileAsync(file, destinationFolder)));
-                await Task.WhenAll(subfolders.Select(subfolder => CopyFolderAsync(subfolder, Path.Combine(destinationFolder, Path.GetFileName(subfolder)))));
+                await Task.WhenAll(subfolders.Select(subfolder => CopyFolderAsync(subfolder, Path.Join(destinationFolder, Path.GetFileName(subfolder)))));
             }
             catch (Exception ex)
             {
@@ -482,7 +581,7 @@ namespace spt_mods_installer
         {
             try
             {
-                string destinationFilePath = Path.Combine(destinationFolder, Path.GetFileName(sourceFile));
+                string destinationFilePath = Path.Join(destinationFolder, Path.GetFileName(sourceFile));
                 using (var sourceStream = new FileStream(sourceFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, useAsync: true))
                 using (var destinationStream = new FileStream(destinationFilePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
                 {
@@ -582,7 +681,7 @@ namespace spt_mods_installer
             {
                 if (!string.IsNullOrEmpty(bepInFolder))
                 {
-                    string? plugins = Path.Combine(bepInFolder, "plugins");
+                    string? plugins = Path.Join(bepInFolder, "plugins");
                     bool pluginsExists = Directory.Exists(plugins);
                     if (pluginsExists)
                     {
@@ -601,7 +700,7 @@ namespace spt_mods_installer
 
                 if (!string.IsNullOrEmpty(userFolder))
                 {
-                    string mods = Path.Combine(userFolder, "mods");
+                    string mods = Path.Join(userFolder, "mods");
                     bool modsExists = Directory.Exists(mods);
                     if (modsExists)
                     {
@@ -685,7 +784,7 @@ namespace spt_mods_installer
         {
             List<string> completedTasks = new List<string>();
 
-            string cacheFolder = Path.Combine(currentEnv, "user", "cache");
+            string cacheFolder = Path.Join(currentEnv, "user", "cache");
             bool doesCacheExist = Directory.Exists(cacheFolder);
             if (doesCacheExist)
             {
