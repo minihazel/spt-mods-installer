@@ -30,7 +30,7 @@ namespace spt_mods_installer
         }
 
         // public string currentEnv = Environment.CurrentDirectory;
-        public static string currentEnv = "D:\\SPT Iterations\\4.0.0 Host";
+        public static string currentEnv = "D:\\SPT Iterations\\3.11 testing";
         public static string? bepInFolder = null;
         public static string? userFolder = null;
         public static string? sptDataFolder = null;
@@ -113,7 +113,7 @@ namespace spt_mods_installer
             {
                 string sptFolder = Path.Join(currentEnv, "SPT");
                 bool sptFolderExists = Directory.Exists(sptFolder);
-                if (sptFolderExists) // >4.0
+                if (sptFolderExists) // > 4.0
                 {
                     sptExecutable = Path.Join(currentEnv, "SPT", "SPT.Server.exe");
                     sptDataFolder = Path.Join(currentEnv, "SPT", "SPT_Data");
@@ -143,13 +143,13 @@ namespace spt_mods_installer
                             $"\\" + Path.GetFileName(currentEnv);
                     }
                 }
-                else // <3.11
+                else // < 3.11
                 {
                     sptExecutable = Path.Join(currentEnv, "SPT.Server.exe");
                     sptDataFolder = Path.Join(currentEnv, "SPT_Data");
                     userFolder = Path.Join(currentEnv, "user");
 
-                    string coreJson = Path.Join(sptDataFolder, "configs", "core.json");
+                    string coreJson = Path.Join(sptDataFolder, "Server", "configs", "core.json");
                     bool coreJsonExists = Path.Exists(coreJson);
                     if (coreJsonExists)
                     {
@@ -247,7 +247,7 @@ namespace spt_mods_installer
 
                 if (isPost400Release(currentEnv))
                 {
-                    user_path = Path.Join(extractPath, "SPT", "user");
+                    user_path = Path.Join(extractPath, "SPT");
                 }
                 else
                 {
@@ -255,6 +255,7 @@ namespace spt_mods_installer
                 }
 
                 string BepInEx_path = Path.Join(extractPath, "BepInEx");
+                Debug.WriteLine(user_path);
 
                 try // server mods
                 {
@@ -275,6 +276,12 @@ namespace spt_mods_installer
                 {
                     Debug.WriteLine("[STANDARD] No BepInEx folder could be found, continuing...");
                 }
+
+                // no server folder, no bep folder, checking for scattered folder
+                // either BepInEx folders (i.e plugins / PluginMod / PluginMod.dll) on > 4.0
+                // or server mod (i.e mods / ServerMod / package.json) on < 3.11
+                // 
+                // \/ \/ \/
 
                 if (!Directory.Exists(user_path))
                 {
