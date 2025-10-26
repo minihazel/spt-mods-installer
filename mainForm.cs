@@ -244,6 +244,7 @@ namespace spt_mods_installer
             if (doesFolderExist)
             {
                 string user_path = string.Empty;
+                string BepInEx_path = Path.Join(extractPath, "BepInEx");
 
                 if (isPost400Release(currentEnv))
                 {
@@ -253,9 +254,6 @@ namespace spt_mods_installer
                 {
                     user_path = Path.Join(extractPath, "user");
                 }
-
-                string BepInEx_path = Path.Join(extractPath, "BepInEx");
-                Debug.WriteLine(user_path);
 
                 try // server mods
                 {
@@ -283,10 +281,32 @@ namespace spt_mods_installer
                 // 
                 // \/ \/ \/
 
-                if (!Directory.Exists(user_path))
+                string[] excludedFolders = { "SPT", "BepInEx" };
+                foreach (string folder in excludedFolders)
                 {
-                    searchUserManually(extractPath);
-                    Debug.WriteLine($"success manual search");
+                    string entry = Path.GetFileName(folder);
+                    if (!string.IsNullOrEmpty(entry))
+                    {
+                        bool isExcluded = excludedFolders.Any(name => name.Equals(entry, StringComparison.OrdinalIgnoreCase));
+
+                        if (!isExcluded)
+                        {
+                            bool isFolder = Directory.Exists(entry);
+                            if (isFolder)
+                            {
+                                string content =
+                                fileName + " does not contain the typical folders required for an automated installation. Continue anyway?";
+
+                                if (MessageBox.Show(content, Text,
+                                    MessageBoxButtons.YesNo) == DialogResult.Yes)
+                                {
+                                    searchUserManually(extractPath);
+                                    Debug.WriteLine($"success manual search");
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
