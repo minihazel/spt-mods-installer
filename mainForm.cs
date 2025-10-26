@@ -23,8 +23,8 @@ namespace spt_mods_installer
             public string? compatibleTarkovVersion { get; set; }
         }
 
-        // public string currentEnv = Environment.CurrentDirectory;
-        public static string currentEnv = "D:\\SPT Iterations\\4.0.0 Host";
+        public static string currentEnv = Environment.CurrentDirectory;
+        // public static string currentEnv = "D:\\SPT Iterations\\4.0.0 Host";
         public static string? bepInFolder = null;
         public static string? userFolder = null;
         public static string? sptDataFolder = null;
