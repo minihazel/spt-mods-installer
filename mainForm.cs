@@ -553,8 +553,6 @@ namespace spt_mods_installer
 
         private void panelDragDrop_DragDrop(object sender, DragEventArgs e)
         {
-            listHistory.Items.Clear();
-
             if (e.Data != null)
             {
                 if (e.Data.GetDataPresent(DataFormats.FileDrop) && isValidLocation)
