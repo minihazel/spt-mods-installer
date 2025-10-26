@@ -211,8 +211,6 @@ namespace spt_mods_installer
             string modName = Path.GetFileNameWithoutExtension(extractPath);
 
             int fullDelay = Convert.ToInt32(notificationDelay.Value) * 1000;
-            timerConfirmation.Interval = fullDelay;
-            timerConfirmation.Start();
             completedTasks = new List<string>();
 
             bool doesFolderExist = Directory.Exists(extractPath);
@@ -221,6 +219,7 @@ namespace spt_mods_installer
                 string user_path = Path.Join(extractPath, "SPT");
                 string BepInEx_path = Path.Join(extractPath, "BepInEx");
 
+                // unknown folders
                 List<string> otherFolders = unknownFolders(extractPath);
                 for (int i = 0; i < otherFolders.Count; i++)
                 {
@@ -270,7 +269,7 @@ namespace spt_mods_installer
             listHistory.Items.Add(addedItem);
 
             Timer tmr = new Timer();
-            tmr.Interval = 3000;
+            tmr.Interval = fullDelay;
             tmr.Tick += (sender, e) =>
             {
                 tmr.Stop();
@@ -689,7 +688,7 @@ namespace spt_mods_installer
                 panelTitleNotice.ForeColor = lightModeText;
                 lblDelayTitle.ForeColor = lightModeText;
                 lblDelayTitle2.ForeColor = lightModeText;
-                notificationDelay.ForeColor = lightModeText;
+                notificationDelay.ForeColor = SystemColors.ControlText;
                 chkDisplayWarning.ForeColor = lightModeText;
 
                 notificationDelay.BackColor = lightMode;
