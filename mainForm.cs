@@ -17,11 +17,6 @@ namespace spt_mods_installer
 
     public partial class mainForm : Form
     {
-        public class sptCorePost
-        {
-            public string? projectName { get; set; }
-            public string? compatibleTarkovVersion { get; set; }
-        }
         public class sptCorePre
         {
             public string? sptVersion { get; set; }
@@ -57,49 +52,6 @@ namespace spt_mods_installer
             bepInFolder = Path.Join(currentEnv, "BepInEx");
         }
 
-        public static string getAssemblyVersion(string path)
-        {
-            try
-            {
-                FileVersionInfo sptInfo = FileVersionInfo.GetVersionInfo(path);
-                if (sptInfo == null) return string.Empty;
-                if (sptInfo.FileVersion == null) return string.Empty;
-
-                int major = sptInfo.FileMajorPart;
-                int minor = sptInfo.FileMinorPart;
-                int build = sptInfo.FileBuildPart;
-
-                string formattedString = major + "." + minor + "." + build;
-                if (string.IsNullOrEmpty(formattedString)) return string.Empty;
-
-                return formattedString;
-            }
-            catch (Exception ex)
-            {
-                return "Error reading version: " + ex.Message.ToString();
-            }
-        }
-
-        public static bool isPost400Release(string assemblyPath)
-        {
-            bool assemblyPathExists = Directory.Exists(assemblyPath);
-            if (assemblyPathExists)
-            {
-                string sptFolder = Path.Join(assemblyPath, "SPT");
-                bool sptFolderExists = Directory.Exists(sptFolder);
-                if (sptFolderExists) // >4.0
-                {
-                    return true;
-                }
-                else // <3.11
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         private void loadDetection()
         {
             panelTitleDetector.Text = $"Could not detect a functioning SPT install";
@@ -111,62 +63,38 @@ namespace spt_mods_installer
             bool currentEnvExists = Directory.Exists(currentEnv);
             if (currentEnvExists)
             {
-                string sptFolder = Path.Join(currentEnv, "SPT");
-                bool sptFolderExists = Directory.Exists(sptFolder);
-                if (sptFolderExists) // > 4.0
-                {
-                    sptExecutable = Path.Join(currentEnv, "SPT", "SPT.Server.exe");
-                    sptDataFolder = Path.Join(currentEnv, "SPT", "SPT_Data");
-                    userFolder = Path.Join(currentEnv, "SPT", "user");
+                sptExecutable = Path.Join(currentEnv, "SPT.Server.exe");
+                sptDataFolder = Path.Join(currentEnv, "SPT_Data");
+                userFolder = Path.Join(currentEnv, "user");
 
-                    string sptVersion = getAssemblyVersion(sptExecutable);
-                    if (string.IsNullOrEmpty(sptVersion))
+                bool doesUserFolderExist = Directory.Exists(userFolder);
+                if (!doesUserFolderExist)
+                {
+                    string content = ">4.0 or higher install detected, please use the 3.11 or lower version of SPT Mod Installer.";
+                    if (MessageBox.Show(content, Text, MessageBoxButtons.OK) == DialogResult.OK)
                     {
+                        Application.Exit();
                         return;
                     }
-
-                    string coreJson = Path.Join(sptDataFolder, "configs", "core.json");
-                    bool coreJsonExists = File.Exists(coreJson);
-                    if (coreJsonExists)
-                    {
-                        string coreContent = File.ReadAllText(coreJson);
-                        sptCorePost? core = JsonSerializer.Deserialize<sptCorePost>(coreContent);
-
-                        string? projectName = core?.projectName;
-                        string? compatibleTarkovVersion = core?.compatibleTarkovVersion;
-
-                        isValidLocation = true;
-                        sptName = $"{projectName} {sptVersion}";
-
-                        panelTitleDetector.Text =
-                            $"Detected {projectName} {sptVersion}" + Environment.NewLine +
-                            $"\\" + Path.GetFileName(currentEnv);
-                    }
                 }
-                else // < 3.11
+
+                string coreJson = Path.Join(sptDataFolder, "Server", "configs", "core.json");
+                bool coreJsonExists = Path.Exists(coreJson);
+                if (coreJsonExists)
                 {
-                    sptExecutable = Path.Join(currentEnv, "SPT.Server.exe");
-                    sptDataFolder = Path.Join(currentEnv, "SPT_Data");
-                    userFolder = Path.Join(currentEnv, "user");
+                    string coreContent = File.ReadAllText(coreJson);
+                    sptCorePre? core = JsonSerializer.Deserialize<sptCorePre>(coreContent);
 
-                    string coreJson = Path.Join(sptDataFolder, "Server", "configs", "core.json");
-                    bool coreJsonExists = Path.Exists(coreJson);
-                    if (coreJsonExists)
-                    {
-                        string coreContent = File.ReadAllText(coreJson);
-                        sptCorePre? core = JsonSerializer.Deserialize<sptCorePre>(coreContent);
+                    string? sptVersion = core?.sptVersion;
+                    string? projectName = core?.projectName;
+                    string? compatibleTarkovVersion = core?.compatibleTarkovVersion;
 
-                        string? sptVersion = core?.sptVersion;
-                        string? projectName = core?.projectName;
-                        string? compatibleTarkovVersion = core?.compatibleTarkovVersion;
+                    isValidLocation = true;
+                    sptName = $"{projectName} {sptVersion}";
 
-                        isValidLocation = true;
-                        sptName = $"{projectName} {sptVersion}";
-
-                        panelTitleDetector.Text =
-                            $"Detected {projectName} {sptVersion}" + Environment.NewLine +
-                            $"\\" + Path.GetFileName(currentEnv);
-                    }
+                    panelTitleDetector.Text =
+                        $"Detected {projectName} {sptVersion}" + Environment.NewLine +
+                        $"\\" + Path.GetFileName(currentEnv);
                 }
 
                 panelTitleDetector.ForeColor = Color.DodgerBlue;
@@ -226,15 +154,12 @@ namespace spt_mods_installer
             timerConfirmation.Interval = fullDelay;
             timerConfirmation.Start();
 
-            if (!isPost400Release(currentEnv))
+            string cacheFolder = string.Empty;
+            cacheFolder = Path.Join(currentEnv, "user", "cache");
+            bool doesCacheExist = Directory.Exists(cacheFolder);
+            if (doesCacheExist)
             {
-                string cacheFolder = string.Empty;
-                cacheFolder = Path.Join(currentEnv, "user", "cache");
-                bool doesCacheExist = Directory.Exists(cacheFolder);
-                if (doesCacheExist)
-                {
-                    btnClearServerCache.Visible = true;
-                }
+                btnClearServerCache.Visible = true;
             }
 
             completedTasks = new List<string>();
@@ -243,17 +168,8 @@ namespace spt_mods_installer
             bool doesFolderExist = Directory.Exists(extractPath);
             if (doesFolderExist)
             {
-                string user_path = string.Empty;
+                string user_path = Path.Join(extractPath, "user");
                 string BepInEx_path = Path.Join(extractPath, "BepInEx");
-
-                if (isPost400Release(currentEnv))
-                {
-                    user_path = Path.Join(extractPath, "SPT");
-                }
-                else
-                {
-                    user_path = Path.Join(extractPath, "user");
-                }
 
                 try // server mods
                 {
@@ -276,37 +192,12 @@ namespace spt_mods_installer
                 }
 
                 // no server folder, no bep folder, checking for scattered folder
-                // either BepInEx folders (i.e plugins / PluginMod / PluginMod.dll) on > 4.0
-                // or server mod (i.e mods / ServerMod / package.json) on < 3.11
-                // 
                 // \/ \/ \/
 
-                string[] excludedFolders = { "SPT", "BepInEx" };
-                foreach (string folder in excludedFolders)
+                if (!Directory.Exists(user_path))
                 {
-                    string entry = Path.GetFileName(folder);
-                    if (!string.IsNullOrEmpty(entry))
-                    {
-                        bool isExcluded = excludedFolders.Any(name => name.Equals(entry, StringComparison.OrdinalIgnoreCase));
-
-                        if (!isExcluded)
-                        {
-                            bool isFolder = Directory.Exists(entry);
-                            if (isFolder)
-                            {
-                                string content =
-                                fileName + " does not contain the typical folders required for an automated installation. Continue anyway?";
-
-                                if (MessageBox.Show(content, Text,
-                                    MessageBoxButtons.YesNo) == DialogResult.Yes)
-                                {
-                                    searchUserManually(extractPath);
-                                    Debug.WriteLine($"success manual search");
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    searchUserManually(extractPath);
+                    Debug.WriteLine($"success manual search");
                 }
             }
 
@@ -454,68 +345,30 @@ namespace spt_mods_installer
 
         private void searchUserManually(string originFolder)
         {
-            string searchPattern = string.Empty;
-            // "package.json" is pre-4.0
-
-            if (isPost400Release(currentEnv))
+            string searchPattern = "package.json";
+            string fileName = Path.GetFileNameWithoutExtension(originFolder);
+            string[] subfolders = Directory.GetDirectories(originFolder);
+            foreach (string subfolder in subfolders)
             {
-                searchPattern = "*.dll";
-                string[] subFolders = Directory.GetDirectories(originFolder);
-                for (int i = 0; i < subFolders.Length; i++)
+                string packageFile = Path.Combine(subfolder, searchPattern);
+                bool packageFileExists = File.Exists(packageFile);
+                if (packageFileExists)
                 {
-                    string[] subFolderFiles = Directory.GetFiles(
-                        subFolders[i],
-                        searchPattern,
-                        SearchOption.TopDirectoryOnly
-                    );
-
-                    if (subFolderFiles.Length > 0)
-                    {
-                        string pluginsSubFolderName = subFolders[i];
-                        string folderName = Path.GetFileName(subFolderFiles[i]);
-                        copyBepInEx(pluginsSubFolderName, true);
-                        completedTasks?.Add($"BepInEx plugin {folderName} installed into {Path.GetFileName(currentEnv)}");
-                        isConditionsMet = true;
-                    }
+                    copyUser(subfolder, false);
+                    completedTasks?.Add($"Server mod of {fileName} installed into {Path.GetFileName(currentEnv)}");
+                    isConditionsMet = true;
+                    break;
                 }
-            }
-            else
-            {
-                searchPattern = "package.json";
-                string fileName = Path.GetFileNameWithoutExtension(originFolder);
-                string[] subfolders = Directory.GetDirectories(originFolder);
-                foreach (string subfolder in subfolders)
+                else
                 {
-                    string packageFile = Path.Combine(subfolder, searchPattern);
-                    bool packageFileExists = File.Exists(packageFile);
-                    if (packageFileExists)
-                    {
-                        copyUser(subfolder, false);
-                        completedTasks?.Add($"Server mod of {fileName} installed into {Path.GetFileName(currentEnv)}");
-                        isConditionsMet = true;
-                        break;
-                    }
-                    else
-                    {
-                        searchUserManually(subfolder);
-                    }
+                    searchUserManually(subfolder);
                 }
             }
         }
 
         private void copyBepInEx(string originalFolder, bool is400)
         {
-            string originalBepIn = string.Empty;
-
-            if (is400)
-            {
-                originalBepIn = Path.Join(bepInFolder, "plugins");
-            }
-            else
-            {
-                originalBepIn = Path.Join(currentEnv, "BepInEx");
-            }
-            
+            string originalBepIn = Path.Join(currentEnv, "BepInEx");
             CopyFolder(originalFolder, originalBepIn);
             isConditionsMet = true;
         }
