@@ -78,6 +78,7 @@
             chkDisplayWarning.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             chkDisplayWarning.AutoSize = true;
             chkDisplayWarning.CheckAlign = ContentAlignment.MiddleRight;
+            chkDisplayWarning.Cursor = Cursors.Hand;
             chkDisplayWarning.Font = new Font("Bahnschrift Light", 10F);
             chkDisplayWarning.Location = new Point(645, 83);
             chkDisplayWarning.Name = "chkDisplayWarning";
@@ -255,9 +256,10 @@
             // btnBrowseForMod
             // 
             btnBrowseForMod.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnBrowseForMod.Location = new Point(754, 3);
+            btnBrowseForMod.Cursor = Cursors.Hand;
+            btnBrowseForMod.Location = new Point(655, 3);
             btnBrowseForMod.Name = "btnBrowseForMod";
-            btnBrowseForMod.Size = new Size(200, 40);
+            btnBrowseForMod.Size = new Size(250, 45);
             btnBrowseForMod.TabIndex = 8;
             btnBrowseForMod.Text = "📥 Browse for mod";
             btnBrowseForMod.UseVisualStyleBackColor = true;
@@ -266,6 +268,7 @@
             // btnClearServerCache
             // 
             btnClearServerCache.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnClearServerCache.Cursor = Cursors.Hand;
             btnClearServerCache.Location = new Point(754, 389);
             btnClearServerCache.Name = "btnClearServerCache";
             btnClearServerCache.Size = new Size(200, 40);

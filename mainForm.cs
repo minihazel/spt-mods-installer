@@ -14,18 +14,31 @@ namespace spt_mods_installer
 
     public partial class mainForm : Form
     {
-        public class sptCore
+        public class sptCorePost
+        {
+            public string? projectName { get; set; }
+            public string? compatibleTarkovVersion { get; set; }
+        }
+        public class sptCorePre
         {
             public string? sptVersion { get; set; }
             public string? projectName { get; set; }
             public string? compatibleTarkovVersion { get; set; }
         }
 
-        public string currentEnv = Environment.CurrentDirectory;
+        // public string currentEnv = Environment.CurrentDirectory;
+        public string currentEnv = "D:\\SPT Iterations\\4.0.0 Host";
         public string? bepInFolder = null;
         public string? userFolder = null;
+        public string? sptDataFolder = null;
         public string? sptName = null;
+        public string? sptExecutable = null;
         List<string>? completedTasks = null;
+
+        public Color darkMode = Color.FromArgb(38, 41, 44);
+        public Color lightMode = SystemColors.Control;
+        public Color darkModeText = Color.LightGray;
+        public Color lightModeText = Color.FromArgb(50, 50, 50);
 
         bool isValidLocation = false;
         bool isConditionsMet = false;
@@ -38,9 +51,30 @@ namespace spt_mods_installer
         private void mainForm_Load(object sender, EventArgs e)
         {
             loadDetection();
+            bepInFolder = Path.Join(currentEnv, "BepInEx");
+        }
 
-            bepInFolder = Path.Combine(currentEnv, "BepInEx");
-            userFolder = Path.Combine(currentEnv, "user");
+        public static string getAssemblyVersion(string path)
+        {
+            try
+            {
+                FileVersionInfo sptInfo = FileVersionInfo.GetVersionInfo(path);
+                if (sptInfo == null) return string.Empty;
+                if (sptInfo.FileVersion == null) return string.Empty;
+
+                int major = sptInfo.FileMajorPart;
+                int minor = sptInfo.FileMinorPart;
+                int build = sptInfo.FileBuildPart;
+
+                string formattedString = major + "." + minor + "." + build;
+                if (string.IsNullOrEmpty(formattedString)) return string.Empty;
+
+                return formattedString;
+            }
+            catch (Exception ex)
+            {
+                return "Error reading version: " + ex.Message.ToString();
+            }
         }
 
         private void loadDetection()
@@ -51,47 +85,75 @@ namespace spt_mods_installer
             dropdownOpen.Enabled = false;
             sptName = $"SPT";
 
-            bool currentEnvExists = Path.Exists(currentEnv);
+            bool currentEnvExists = Directory.Exists(currentEnv);
             if (currentEnvExists)
             {
-                string akidata = Path.Join(currentEnv, "SPT_Data");
-                bool akidataExists = Path.Exists(akidata);
-                if (akidataExists)
+                string sptFolder = Path.Join(currentEnv, "SPT");
+                bool sptFolderExists = Directory.Exists(sptFolder);
+                if (sptFolderExists) // >4.0
                 {
-                    string server = Path.Join(akidata, "Server");
-                    bool serverExists = Path.Exists(server);
-                    if (serverExists)
+                    sptExecutable = Path.Join(currentEnv, "SPT", "SPT.Server.exe");
+                    sptDataFolder = Path.Join(currentEnv, "SPT", "SPT_Data");
+                    userFolder = Path.Join(currentEnv, "SPT", "user");
+
+                    string sptVersion = getAssemblyVersion(sptExecutable);
+                    if (string.IsNullOrEmpty(sptVersion))
                     {
-                        string configs = Path.Join(server, "configs");
-                        bool configsExists = Path.Exists(configs);
-                        if (configsExists)
-                        {
-                            string coreJson = Path.Join(configs, "core.json");
-                            bool coreJsonExists = Path.Exists(coreJson);
-                            if (coreJsonExists)
-                            {
-                                string coreContent = File.ReadAllText(coreJson);
-                                sptCore? core = JsonSerializer.Deserialize<sptCore>(coreContent);
+                        return;
+                    }
 
-                                string? sptVersion = core?.sptVersion;
-                                string? projectName = core?.projectName;
-                                isValidLocation = true;
-                                sptName = $"{projectName} {sptVersion}";
+                    string coreJson = Path.Join(sptDataFolder, "configs", "core.json");
+                    bool coreJsonExists = File.Exists(coreJson);
+                    if (coreJsonExists)
+                    {
+                        string coreContent = File.ReadAllText(coreJson);
+                        sptCorePost? core = JsonSerializer.Deserialize<sptCorePost>(coreContent);
 
-                                panelTitleDetector.Text = $"Detected {projectName} {sptVersion}" + Environment.NewLine +
-                                                          Path.GetFileName(currentEnv);
-                                panelTitleDetector.ForeColor = Color.DodgerBlue;
-                                titleDragDrop.Text = "📥 Drag and drop any archive";
-                                dropdownOpen.Enabled = true;
+                        string? projectName = core?.projectName;
+                        string? compatibleTarkovVersion = core?.compatibleTarkovVersion;
 
-                                // adding ranges
-                                dropdownOpen.Items.Add("Open server folder");
-                                dropdownOpen.Items.Add("Open BepInEx folder");
-                                dropdownOpen.Items.Add("Open user mods folder");
-                            }
-                        }
+                        isValidLocation = true;
+                        sptName = $"{projectName} {sptVersion}";
+
+                        panelTitleDetector.Text =
+                            $"Detected {projectName} {sptVersion}" + Environment.NewLine +
+                            $"\\" + Path.GetFileName(currentEnv);
                     }
                 }
+                else // <3.11
+                {
+                    sptExecutable = Path.Join(currentEnv, "SPT.Server.exe");
+                    sptDataFolder = Path.Join(currentEnv, "SPT_Data");
+                    userFolder = Path.Join(currentEnv, "user");
+
+                    string coreJson = Path.Join(sptDataFolder, "configs", "core.json");
+                    bool coreJsonExists = Path.Exists(coreJson);
+                    if (coreJsonExists)
+                    {
+                        string coreContent = File.ReadAllText(coreJson);
+                        sptCorePre? core = JsonSerializer.Deserialize<sptCorePre>(coreContent);
+
+                        string? sptVersion = core?.sptVersion;
+                        string? projectName = core?.projectName;
+                        string? compatibleTarkovVersion = core?.compatibleTarkovVersion;
+
+                        isValidLocation = true;
+                        sptName = $"{projectName} {sptVersion}";
+
+                        panelTitleDetector.Text =
+                            $"Detected {projectName} {sptVersion}" + Environment.NewLine +
+                            $"\\" + Path.GetFileName(currentEnv);
+                    }
+                }
+
+                panelTitleDetector.ForeColor = Color.DodgerBlue;
+                titleDragDrop.Text = "📥 Drag and drop any archive";
+                dropdownOpen.Enabled = true;
+
+                // adding ranges
+                dropdownOpen.Items.Add("Open server folder");
+                dropdownOpen.Items.Add("Open BepInEx folder");
+                dropdownOpen.Items.Add("Open server mods folder");
             }
         }
 
@@ -563,19 +625,22 @@ namespace spt_mods_installer
             {
                 btnThemeSwitch.Text = "●";
 
-                panelTitleName.ForeColor = Color.LightGray;
-                panelTitleNotice.ForeColor = Color.LightGray;
-                lblDelayTitle.ForeColor = Color.LightGray;
-                lblDelayTitle2.ForeColor = Color.LightGray;
-                notificationDelay.BackColor = Color.FromArgb(38, 41, 44);
-                notificationDelay.ForeColor = Color.LightGray;
+                panelTitleName.ForeColor = darkModeText;
+                panelTitleNotice.ForeColor = darkModeText;
+                lblDelayTitle.ForeColor = darkModeText;
+                lblDelayTitle2.ForeColor = darkModeText;
+                notificationDelay.ForeColor = darkModeText;
+                chkDisplayWarning.ForeColor = darkModeText;
+
+                notificationDelay.BackColor = darkMode;
+                listHistory.BackColor = darkMode;
 
                 this.BackColor = Color.FromArgb(38, 41, 44);
                 foreach (Panel pnl in this.Controls)
                 {
                     if (pnl.Name.ToLower() != "panelseparator1")
                     {
-                        pnl.BackColor = Color.FromArgb(38, 41, 44);
+                        pnl.BackColor = darkMode;
                     }
                 }
             }
@@ -584,18 +649,21 @@ namespace spt_mods_installer
                 btnThemeSwitch.Text = "○";
 
                 panelTitleName.ForeColor = SystemColors.ControlText;
-                panelTitleNotice.ForeColor = Color.FromArgb(50, 50, 50);
-                lblDelayTitle.ForeColor = Color.FromArgb(50, 50, 50);
-                lblDelayTitle2.ForeColor = Color.FromArgb(50, 50, 50);
-                notificationDelay.BackColor = SystemColors.Window;
-                notificationDelay.ForeColor = Color.FromArgb(50, 50, 50);
+                panelTitleNotice.ForeColor = lightModeText;
+                lblDelayTitle.ForeColor = lightModeText;
+                lblDelayTitle2.ForeColor = lightModeText;
+                notificationDelay.ForeColor = lightModeText;
+                chkDisplayWarning.ForeColor = lightModeText;
+
+                notificationDelay.BackColor = lightMode;
+                listHistory.BackColor = lightMode;
 
                 this.BackColor = SystemColors.Control;
                 foreach (Panel pnl in this.Controls)
                 {
                     if (pnl.Name.ToLower() != "panelseparator1")
                     {
-                        pnl.BackColor = SystemColors.Control;
+                        pnl.BackColor = lightMode;
                     }
                 }
             }
