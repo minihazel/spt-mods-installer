@@ -106,13 +106,13 @@ namespace spt_mods_installer
             bool currentEnvExists = Directory.Exists(currentEnv);
             if (currentEnvExists)
             {
-                string sptFolder = Path.Join(currentEnv, "SPT");
+                string sptFolder = Path.Join(currentEnv, "SPT_Runtime");
                 bool sptFolderExists = Directory.Exists(sptFolder);
                 if (sptFolderExists) // > 4.0
                 {
-                    sptExecutable = Path.Join(currentEnv, "SPT", "SPT.Server.exe");
-                    sptDataFolder = Path.Join(currentEnv, "SPT", "SPT_Data");
-                    userFolder = Path.Join(currentEnv, "SPT", "user");
+                    sptExecutable = Path.Join(sptFolder, "SPT.Server.exe");
+                    sptDataFolder = Path.Join(sptFolder, "SPT_Data");
+                    userFolder = Path.Join(sptFolder, "user");
 
                     string sptVersion = getAssemblyVersion(sptExecutable);
                     if (string.IsNullOrEmpty(sptVersion))
@@ -216,7 +216,7 @@ namespace spt_mods_installer
             bool doesFolderExist = Directory.Exists(extractPath);
             if (doesFolderExist)
             {
-                string user_path = Path.Join(extractPath, "SPT");
+                string user_path = Path.Join(extractPath, "SPT_Runtime", "SPT");
                 string BepInEx_path = Path.Join(extractPath, "BepInEx");
 
                 // unknown folders
@@ -302,7 +302,7 @@ namespace spt_mods_installer
 
         private static List<string> unknownFolders(string originFolder)
         {
-            string[] excludedFolders = { "SPT", "BepInEx" };
+            string[] excludedFolders = { "SPT_Runtime", "BepInEx" };
             List<string> items = new List<string>();
 
             try
@@ -567,10 +567,10 @@ namespace spt_mods_installer
                             {
                                 if (chkDisplayWarning.Checked)
                                 {
-                                    int largeArchive = 15;
+                                    int largeArchive = 35;
                                     if (doesArchiveExceedSize(file, largeArchive))
                                     {
-                                        if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
+                                        if (MessageBox.Show("This archive exceeds 35 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
                                             Environment.NewLine +
                                             "Do you wish to proceed?",
                                             "Large archive detected",
@@ -606,7 +606,7 @@ namespace spt_mods_installer
             {
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
-                    FileName = currentEnv,
+                    FileName = Path.Join(currentEnv, "SPT_Runtime"),
                     UseShellExecute = true
                 };
 
@@ -719,7 +719,7 @@ namespace spt_mods_installer
         {
             List<string> completedTasks = new List<string>();
 
-            string cacheFolder = Path.Join(currentEnv, "user", "cache");
+            string cacheFolder = Path.Join(currentEnv, "SPT_Runtime", "user", "cache");
             bool doesCacheExist = Directory.Exists(cacheFolder);
             if (doesCacheExist)
             {
@@ -744,10 +744,10 @@ namespace spt_mods_installer
             {
                 string selectedFile = Path.GetFullPath(cf.FileName);
 
-                int largeArchive = 15;
+                int largeArchive = 35;
                 if (doesArchiveExceedSize(selectedFile, largeArchive))
                 {
-                    if (MessageBox.Show("This archive exceeds 10 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
+                    if (MessageBox.Show("This archive exceeds 35 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
                         Environment.NewLine +
                         "Do you wish to proceed?",
                         "Large archive detected",
