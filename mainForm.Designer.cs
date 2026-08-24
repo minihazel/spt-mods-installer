@@ -250,7 +250,7 @@
             // 
             lblLoadingDots.AllowDrop = true;
             lblLoadingDots.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            lblLoadingDots.Font = new Font("Bahnschrift", 30F);
+            lblLoadingDots.Font = new Font("Bahnschrift Light", 30F);
             lblLoadingDots.ForeColor = Color.Black;
             lblLoadingDots.Location = new Point(655, 117);
             lblLoadingDots.Name = "lblLoadingDots";
@@ -313,7 +313,7 @@
             btnBrowseForMod.Name = "btnBrowseForMod";
             btnBrowseForMod.Size = new Size(250, 45);
             btnBrowseForMod.TabIndex = 8;
-            btnBrowseForMod.Text = "📥 Browse for mod";
+            btnBrowseForMod.Text = "📥 Browse for mods";
             btnBrowseForMod.UseVisualStyleBackColor = true;
             btnBrowseForMod.Click += btnBrowseForMod_Click;
             // 
