@@ -1,20 +1,12 @@
-﻿using System.Text.Json;
-using System.IO.Compression;
-using System.Diagnostics;
-using System.ComponentModel.DataAnnotations.Schema;
-using SharpCompress.Archives;
-using SharpCompress.Archives.Rar;
-using SharpCompress.Archives.SevenZip;
-using SharpCompress.Archives.Zip;
+﻿using SharpCompress.Archives;
 using SharpCompress.Common;
-using Microsoft.VisualBasic.Devices;
+using System.Diagnostics;
+using System.Text.Json;
+using static System.Net.Mime.MediaTypeNames;
 using Timer = System.Windows.Forms.Timer;
-using System.Drawing.Drawing2D;
-using System.Transactions;
 
 namespace spt_mods_installer
 {
-
     public partial class mainForm : Form
     {
         public class sptCorePost
@@ -50,6 +42,11 @@ namespace spt_mods_installer
         {
             loadDetection();
             bepInFolder = Path.Join(currentEnv, "BepInEx");
+
+            lblCounter.DragEnter += panelDragDrop_DragEnter;
+            lblCounter.DragDrop += panelDragDrop_DragDrop;
+
+            btnThemeSwitch.PerformClick();
         }
 
         public static string getAssemblyVersion(string path)
@@ -80,7 +77,7 @@ namespace spt_mods_installer
             bool assemblyPathExists = Directory.Exists(assemblyPath);
             if (assemblyPathExists)
             {
-                string sptFolder = Path.Join(assemblyPath, "SPT");
+                string sptFolder = Path.Join(assemblyPath, "SPT_Runtime");
                 bool sptFolderExists = Directory.Exists(sptFolder);
                 if (sptFolderExists) // >4.0
                 {
@@ -150,13 +147,12 @@ namespace spt_mods_installer
             }
         }
 
-        private void extractArchive(string filepath)
+        private async Task extractArchiveAsync(string filepath, int currentNumber)
         {
             string? extractPath = null;
 
             try
             {
-                // string extractPath = Path.Join(Path.GetDirectoryName(filepath), Path.GetFileNameWithoutExtension(filepath));
                 extractPath = Path.Join(currentEnv, Path.GetFileNameWithoutExtension(filepath));
 
                 if (!Directory.Exists(extractPath))
@@ -165,48 +161,58 @@ namespace spt_mods_installer
                 }
 
                 string currentMod = Path.GetFileNameWithoutExtension(filepath);
-                string extension = Path.GetExtension(filepath).ToLower();
 
-                using (var archive = ArchiveFactory.Open(filepath))
+                await Task.Run(() =>
                 {
-                    foreach (var entry in archive.Entries)
+                    using (var archive = ArchiveFactory.Open(filepath))
                     {
-                        entry.WriteToDirectory(extractPath, new ExtractionOptions
+                        foreach (var entry in archive.Entries)
                         {
-                            ExtractFullPath = true,
-                            Overwrite = true
-                        });
+                            entry.WriteToDirectory(extractPath, new ExtractionOptions
+                            {
+                                ExtractFullPath = true,
+                                Overwrite = true
+                            });
+                        }
                     }
-                }
+                });
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Extract error: {ex.Message}");
+                this.Invoke((MethodInvoker)(() =>
+                {
+                    MessageBox.Show($"Extract error: {ex.Message}");
+                }));
             }
 
             if (extractPath != null)
             {
                 string modName = Path.GetFileName(extractPath);
+                bool hasMisc = await Task.Run(() => areThereMiscFiles(extractPath));
 
-                if (areThereMiscFiles(extractPath))
+                if (hasMisc)
                 {
                     string content = "Mod " + modName + " contains unsupported filetypes." + Environment.NewLine + Environment.NewLine +
                             "It will be skipped, please urge mod authors to pack their SPT mods according to the Forge guidelines.";
 
-                    MessageBox.Show(content, Text, MessageBoxButtons.OK);
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        MessageBox.Show(content, Text, MessageBoxButtons.OK);
+                    }));
+
                     try
                     {
-                        Directory.Delete(extractPath, true);
+                        await Task.Run(() => Directory.Delete(extractPath, true));
                     }
                     catch { }
                     return;
                 }
 
-                moveFolder(extractPath);
+                await Task.Run(() => moveFolder(extractPath, currentNumber));
             }
         }
 
-        private void moveFolder(string extractPath)
+        private void moveFolder(string extractPath, int currentNumber)
         {
             string modName = Path.GetFileNameWithoutExtension(extractPath);
 
@@ -216,7 +222,7 @@ namespace spt_mods_installer
             bool doesFolderExist = Directory.Exists(extractPath);
             if (doesFolderExist)
             {
-                string user_path = Path.Join(extractPath, "SPT_Runtime", "SPT");
+                string user_path = Path.Join(extractPath, "SPT_Runtime", "user");
                 string BepInEx_path = Path.Join(extractPath, "BepInEx");
 
                 // unknown folders
@@ -225,11 +231,10 @@ namespace spt_mods_installer
                 {
                     string unknownName = Path.GetFileName(otherFolders[i]);
                     string unknown_path = Path.Join(extractPath, unknownName);
-                    string bepInPath = Path.Join(bepInFolder, "plugins");
 
                     try
                     {
-                        CopyFolder(unknown_path, Path.Join(bepInPath, Path.GetFileName(unknownName)));
+                        CopyFolder(unknown_path, Path.Join(currentEnv, unknownName));
                         Debug.WriteLine($"success unknown folder");
                     }
                     catch
@@ -264,19 +269,9 @@ namespace spt_mods_installer
             searchBepInExFilesManually(extractPath, modName);
             searchExecutableFilesManually(extractPath, modName);
 
-            string addedItem = $"{modName} installed into {Path.GetFileName(currentEnv)}";
+            string addedItem = $"- {modName} installed into {Path.GetFileName(currentEnv)}";
             completedTasks.Add(addedItem);
             listHistory.Items.Add(addedItem);
-
-            Timer tmr = new Timer();
-            tmr.Interval = fullDelay;
-            tmr.Tick += (sender, e) =>
-            {
-                tmr.Stop();
-                tmr.Dispose();
-                listHistory.Items.Clear();
-            };
-            tmr.Start();
 
             completedTasks.Clear();
             Directory.Delete(extractPath, true);
@@ -462,6 +457,23 @@ namespace spt_mods_installer
             }
         }
 
+        private void processExtractedDirectory(string extractedRootDirectory, string gameInstallPath)
+        {
+            foreach (string subfolder in Directory.GetDirectories(extractedRootDirectory))
+            {
+                string folderName = Path.GetFileName(subfolder);
+                string destinationFolder = Path.Join(gameInstallPath, folderName);
+
+                CopyFolder(subfolder, destinationFolder);
+            }
+
+            foreach (string file in Directory.GetFiles(extractedRootDirectory))
+            {
+                string destFile = Path.Join(gameInstallPath, Path.GetFileName(file));
+                File.Copy(file, destFile, true);
+            }
+        }
+
         static void CopyFolder(string sourceFolder, string destinationFolder)
         {
             try
@@ -540,7 +552,7 @@ namespace spt_mods_installer
             pen.Dispose();
         }
 
-        private void panelDragDrop_DragEnter(object sender, DragEventArgs e)
+        private void panelDragDrop_DragEnter(object? sender, DragEventArgs e)
         {
             if (e.Data != null)
             {
@@ -551,51 +563,136 @@ namespace spt_mods_installer
             }
         }
 
-        private void panelDragDrop_DragDrop(object sender, DragEventArgs e)
+        private async void panelDragDrop_DragDrop(object? sender, DragEventArgs e)
         {
-            if (e.Data != null)
-            {
-                if (e.Data.GetDataPresent(DataFormats.FileDrop) && isValidLocation)
-                {
-                    if (e.Data.GetData(DataFormats.FileDrop) is string[] files)
-                    {
-                        foreach (string file in files)
-                        {
-                            string extension = Path.GetExtension(file).ToLower();
+            if (e.Data == null || !e.Data.GetDataPresent(DataFormats.FileDrop) || !isValidLocation)
+                return;
 
-                            if (extension == ".rar" || extension == ".zip" || extension == ".7z")
+            if (e.Data.GetData(DataFormats.FileDrop) is string[] files)
+            {
+                titleDragDrop.Visible = false;
+                listHistory.Visible = true;
+                lblCounter.Visible = true;
+                lblLoadingDots.Visible = true;
+
+                var validExtensions = new[] { ".rar", ".zip", ".7z" };
+                var extractQuantity = files
+                    .Where(f => validExtensions.Contains(Path.GetExtension(f).ToLower()))
+                    .ToList();
+
+                int unsupportedCount = files.Length - extractQuantity.Count;
+                if (unsupportedCount > 0 && extractQuantity.Count == 0)
+                {
+                    MessageBox.Show(Text, "Only .rar, .zip, and .7z archives can be extracted with this software.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                int totalArchivesCount = extractQuantity.Count;
+
+                try
+                {
+                    for (int i = 0; i < totalArchivesCount; i++)
+                    {
+                        string file = extractQuantity[i];
+                        int currentNumber = i + 1;
+
+                        updateStatus($"({currentNumber}/{totalArchivesCount}) Extracting and installing {Path.GetFileName(file)}");
+                        updateCounterStatus($"{currentNumber}/{totalArchivesCount}");
+
+                        bool shouldExtract = true;
+
+                        if (chkDisplayWarning.Checked)
+                        {
+                            int largeArchive = 35;
+                            if (doesArchiveExceedSize(file, largeArchive))
                             {
-                                if (chkDisplayWarning.Checked)
+                                DialogResult result = MessageBox.Show(
+                                    $"Archive ({currentNumber}/{totalArchivesCount}): '{Path.GetFileName(file)}' exceeds 35 megabytes and may take longer to install." + Environment.NewLine + Environment.NewLine +
+                                    "Do you wish to proceed?",
+                                    "Large archive detected",
+                                    MessageBoxButtons.YesNo
+                                );
+
+                                if (result != DialogResult.Yes)
                                 {
-                                    int largeArchive = 35;
-                                    if (doesArchiveExceedSize(file, largeArchive))
-                                    {
-                                        if (MessageBox.Show("This archive exceeds 35 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
-                                            Environment.NewLine +
-                                            "Do you wish to proceed?",
-                                            "Large archive detected",
-                                            MessageBoxButtons.YesNo) == DialogResult.Yes)
-                                        {
-                                            extractArchive(file);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        extractArchive(file);
-                                    }
+                                    shouldExtract = false;
                                 }
-                                else
-                                {
-                                    extractArchive(file);
-                                }
-                            }
-                            else
-                            {
-                                MessageBox.Show("Only (rar, zip, 7z) formats are currently supported", "SPT Mod Installer", MessageBoxButtons.OK);
                             }
                         }
+
+                        if (shouldExtract)
+                        {
+                            await extractArchiveAnimated(file, currentNumber, totalArchivesCount);
+                        }
                     }
+
+                    if (chkSkipPostLog.Checked)
+                    {
+                        updateCounterStatus(string.Empty);
+                        updateStatus(string.Empty);
+                        listHistory.Items.Clear();
+                        titleDragDrop.Visible = true;
+                        listHistory.Visible = false;
+                        lblCounter.Visible = false;
+                        lblLoadingDots.Visible = false;
+                        return;
+                    }
+
+                    updateStatus($"({totalArchivesCount}/{totalArchivesCount}) Extraction complete!");
+                    listHistory.Items.Add("");
+                    listHistory.Items.Add("Extraction complete! Cleaning up...");
+
+                    decimal fullDelay = notificationDelay.Value * 1000;
+                    int convertedDelay = Convert.ToInt32(fullDelay);
+
+                    await Task.Delay(convertedDelay);
+                    updateCounterStatus(string.Empty);
+                    listHistory.Items.Clear();
+                    titleDragDrop.Visible = true;
+                    listHistory.Visible = false;
+                    lblCounter.Visible = false;
+                    lblLoadingDots.Visible = false;
                 }
+                finally
+                {
+                    updateStatus(string.Empty);
+                }
+            }
+        }
+
+        private void updateStatus(string notification)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)(() => this.Text = notification));
+            }
+            else
+            {
+                this.Text = notification;
+            }
+        }
+
+        private void updateCounterStatus(string notification)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)(() => lblCounter.Text = notification));
+            }
+            else
+            {
+                lblCounter.Text = notification;
+            }
+        }
+
+        private void updateLoadingDots(string notification)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke((MethodInvoker)(() => lblLoadingDots.Text = notification));
+            }
+            else
+            {
+                lblLoadingDots.Text = notification;
             }
         }
 
@@ -665,9 +762,13 @@ namespace spt_mods_installer
                 lblDelayTitle2.ForeColor = darkModeText;
                 notificationDelay.ForeColor = darkModeText;
                 chkDisplayWarning.ForeColor = darkModeText;
+                chkSkipPostLog.ForeColor = darkModeText;
+                lblCounter.ForeColor = darkModeText;
+                lblLoadingDots.ForeColor = darkModeText;
 
                 notificationDelay.BackColor = darkMode;
                 listHistory.BackColor = darkMode;
+                listHistory.ForeColor = darkModeText;
 
                 this.BackColor = Color.FromArgb(38, 41, 44);
                 foreach (Panel pnl in this.Controls)
@@ -688,9 +789,13 @@ namespace spt_mods_installer
                 lblDelayTitle2.ForeColor = lightModeText;
                 notificationDelay.ForeColor = SystemColors.ControlText;
                 chkDisplayWarning.ForeColor = lightModeText;
+                chkSkipPostLog.ForeColor = lightModeText;
+                lblCounter.ForeColor = lightModeText;
+                lblLoadingDots.ForeColor = lightModeText;
 
                 notificationDelay.BackColor = lightMode;
                 listHistory.BackColor = lightMode;
+                listHistory.ForeColor = lightModeText;
 
                 this.BackColor = SystemColors.Control;
                 foreach (Panel pnl in this.Controls)
@@ -732,34 +837,132 @@ namespace spt_mods_installer
             }
         }
 
-        private void btnBrowseForMod_Click(object sender, EventArgs e)
+        private async void btnBrowseForMod_Click(object sender, EventArgs e)
         {
-            OpenFileDialog cf = new OpenFileDialog();
-            cf.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            cf.Multiselect = false;
-            cf.Title = "Select a mod (zip archive) to install";
-            cf.Filter = "Zip Archives (*.zip)|*.zip|(*.7z)|*.7z|Rar Archives (*.rar)|*.rar";
-
-            if (cf.ShowDialog() == DialogResult.OK)
+            using (OpenFileDialog cf = new OpenFileDialog())
             {
-                string selectedFile = Path.GetFullPath(cf.FileName);
+                cf.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                cf.Multiselect = true;
+                cf.Title = "Select a mod (zip archive) to install";
+                cf.Filter = "Zip archives (*.zip)|*.zip|7z archives (*.7z)|*.7z|RAR archives (*.rar)|*.rar";
 
-                int largeArchive = 35;
-                if (doesArchiveExceedSize(selectedFile, largeArchive))
+                if (cf.ShowDialog() == DialogResult.OK)
                 {
-                    if (MessageBox.Show("This archive exceeds 35 megabytes, and may take longer to install. The window may freeze." + Environment.NewLine +
-                        Environment.NewLine +
-                        "Do you wish to proceed?",
-                        "Large archive detected",
-                        MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    titleDragDrop.Visible = false;
+                    listHistory.Visible = true;
+                    lblCounter.Visible = true;
+                    lblLoadingDots.Visible = true;
+
+                    string[] selectedFiles = cf.FileNames;
+                    int totalArchivesCount = selectedFiles.Length;
+
+                    try
                     {
-                        extractArchive(selectedFile);
+                        for (int i = 0; i < totalArchivesCount; i++)
+                        {
+                            string file = Path.GetFullPath(selectedFiles[i]);
+                            string fileName = Path.GetFileName(file);
+                            int currentNumber = i + 1;
+                            bool shouldExtract = true;
+
+                            updateStatus($"({currentNumber}/{totalArchivesCount}) Extracting and installing {Path.GetFileName(file)}");
+                            updateCounterStatus($"{currentNumber}/{totalArchivesCount}");
+
+                            int largeArchive = 35;
+                            if (chkDisplayWarning.Checked && doesArchiveExceedSize(file, largeArchive))
+                            {
+                                DialogResult result = MessageBox.Show(
+                                    $"Archive ({currentNumber.ToString()}/{totalArchivesCount}): '{fileName}' exceeds 35 megabytes, and may take longer to install." + Environment.NewLine + Environment.NewLine +
+                                    "Do you wish to proceed?",
+                                    "Large archive detected",
+                                    MessageBoxButtons.YesNo
+                                );
+
+                                if (result != DialogResult.Yes)
+                                {
+                                    shouldExtract = false;
+                                }
+                            }
+
+                            if (shouldExtract)
+                            {
+                                await extractArchiveAnimated(file, currentNumber, totalArchivesCount);
+                            }
+                        }
+
+                        if (chkSkipPostLog.Checked)
+                        {
+                            updateCounterStatus(string.Empty);
+                            updateStatus(string.Empty);
+                            listHistory.Items.Clear();
+                            titleDragDrop.Visible = true;
+                            listHistory.Visible = false;
+                            lblCounter.Visible = false;
+                            lblLoadingDots.Visible = false;
+                            return;
+                        }
+
+                        updateStatus($"({totalArchivesCount}/{totalArchivesCount}) Extraction complete!");
+                        listHistory.Items.Add("");
+                        listHistory.Items.Add("Extraction complete! Cleaning up...");
+
+                        decimal fullDelay = notificationDelay.Value * 1000;
+                        int convertedDelay = Convert.ToInt32(fullDelay);
+
+                        await Task.Delay(convertedDelay);
+                        updateCounterStatus(string.Empty);
+                        listHistory.Items.Clear();
+                        titleDragDrop.Visible = true;
+                        listHistory.Visible = false;
+                        lblCounter.Visible = false;
+                        lblLoadingDots.Visible = false;
+                    }
+                    finally
+                    {
+                        updateStatus(string.Empty);
                     }
                 }
-                else
+            }
+        }
+
+        private async Task extractArchiveAnimated(string file, int currentNumber, int totalArchivesCount)
+        {
+            using (CancellationTokenSource cts = new CancellationTokenSource())
+            {
+                string fileName = Path.GetFileName(file);
+                Task animationTask = Task.Run(async () =>
                 {
-                    extractArchive(selectedFile);
+                    int dotCount = 1;
+                    while (!cts.Token.IsCancellationRequested)
+                    {
+                        string dots = new string('.', dotCount);
+
+                        this.Invoke(new Action(() =>
+                        {
+                            updateLoadingDots(dots);
+                        }));
+
+                        dotCount = (dotCount % 3) + 1;
+
+                        try
+                        {
+                            await Task.Delay(550, cts.Token); // tick speed (400ms)
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            break; // expected when token cancels out
+                        }
+                    }
+                });
+
+                await extractArchiveAsync(file, 1);
+                cts.Cancel();
+
+                try
+                {
+                    await animationTask; // post-clean to ensure handled exceptions go well
                 }
+                catch (TaskCanceledException) { }
             }
         }
 
@@ -774,6 +977,22 @@ namespace spt_mods_installer
             {
                 Debug.WriteLine(ex);
             }
+        }
+
+        private void lblCounter_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data != null)
+            {
+                if (e.Data.GetDataPresent(DataFormats.FileDrop) && isValidLocation)
+                {
+                    e.Effect = DragDropEffects.Copy;
+                }
+            }
+        }
+
+        private void lblCounter_DragDrop(object sender, DragEventArgs e)
+        {
+
         }
     }
 }

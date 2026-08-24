@@ -44,6 +44,9 @@
             panelTitleName = new Label();
             panelSeparator1 = new Panel();
             panelDragDrop = new Panel();
+            chkSkipPostLog = new CheckBox();
+            lblLoadingDots = new Label();
+            lblCounter = new Label();
             titleDragDrop = new Label();
             listHistory = new ListBox();
             btnBrowseForMod = new Button();
@@ -108,7 +111,7 @@
             notificationDelay.Name = "notificationDelay";
             notificationDelay.Size = new Size(45, 25);
             notificationDelay.TabIndex = 9;
-            notificationDelay.Value = new decimal(new int[] { 5, 0, 0, 0 });
+            notificationDelay.Value = new decimal(new int[] { 3, 0, 0, 0 });
             // 
             // lblDelayTitle
             // 
@@ -215,6 +218,9 @@
             // 
             panelDragDrop.AllowDrop = true;
             panelDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panelDragDrop.Controls.Add(chkSkipPostLog);
+            panelDragDrop.Controls.Add(lblLoadingDots);
+            panelDragDrop.Controls.Add(lblCounter);
             panelDragDrop.Controls.Add(titleDragDrop);
             panelDragDrop.Controls.Add(listHistory);
             panelDragDrop.Controls.Add(btnBrowseForMod);
@@ -226,9 +232,53 @@
             panelDragDrop.DragDrop += panelDragDrop_DragDrop;
             panelDragDrop.DragEnter += panelDragDrop_DragEnter;
             // 
+            // chkSkipPostLog
+            // 
+            chkSkipPostLog.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            chkSkipPostLog.AutoSize = true;
+            chkSkipPostLog.CheckAlign = ContentAlignment.MiddleRight;
+            chkSkipPostLog.Cursor = Cursors.Hand;
+            chkSkipPostLog.Font = new Font("Bahnschrift Light", 10F);
+            chkSkipPostLog.Location = new Point(771, 408);
+            chkSkipPostLog.Name = "chkSkipPostLog";
+            chkSkipPostLog.Size = new Size(183, 21);
+            chkSkipPostLog.TabIndex = 12;
+            chkSkipPostLog.Text = "Skip post-extraction log";
+            chkSkipPostLog.UseVisualStyleBackColor = true;
+            // 
+            // lblLoadingDots
+            // 
+            lblLoadingDots.AllowDrop = true;
+            lblLoadingDots.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblLoadingDots.Font = new Font("Bahnschrift", 30F);
+            lblLoadingDots.ForeColor = Color.Black;
+            lblLoadingDots.Location = new Point(655, 117);
+            lblLoadingDots.Name = "lblLoadingDots";
+            lblLoadingDots.Size = new Size(250, 53);
+            lblLoadingDots.TabIndex = 11;
+            lblLoadingDots.Text = ". . .";
+            lblLoadingDots.TextAlign = ContentAlignment.TopCenter;
+            lblLoadingDots.Visible = false;
+            // 
+            // lblCounter
+            // 
+            lblCounter.AllowDrop = true;
+            lblCounter.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblCounter.Font = new Font("Bahnschrift", 30F);
+            lblCounter.ForeColor = Color.FromArgb(90, 90, 90);
+            lblCounter.Location = new Point(655, 51);
+            lblCounter.Name = "lblCounter";
+            lblCounter.Size = new Size(250, 90);
+            lblCounter.TabIndex = 10;
+            lblCounter.Text = "0/0";
+            lblCounter.TextAlign = ContentAlignment.MiddleCenter;
+            lblCounter.Visible = false;
+            lblCounter.DragDrop += lblCounter_DragDrop;
+            lblCounter.DragEnter += lblCounter_DragEnter;
+            // 
             // titleDragDrop
             // 
-            titleDragDrop.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            titleDragDrop.Anchor = AnchorStyles.None;
             titleDragDrop.Font = new Font("Bahnschrift Light", 10F);
             titleDragDrop.ForeColor = Color.FromArgb(90, 90, 90);
             titleDragDrop.Location = new Point(326, 191);
@@ -245,12 +295,14 @@
             listHistory.BackColor = SystemColors.Control;
             listHistory.BorderStyle = BorderStyle.None;
             listHistory.Enabled = false;
-            listHistory.Font = new Font("Bahnschrift Light", 10F);
+            listHistory.Font = new Font("Bahnschrift Light", 14F);
             listHistory.FormattingEnabled = true;
-            listHistory.Location = new Point(40, 269);
+            listHistory.ItemHeight = 23;
+            listHistory.Location = new Point(40, 15);
             listHistory.Name = "listHistory";
-            listHistory.Size = new Size(708, 160);
+            listHistory.Size = new Size(606, 414);
             listHistory.TabIndex = 9;
+            listHistory.Visible = false;
             listHistory.MouseDown += listHistory_MouseDown;
             // 
             // btnBrowseForMod
@@ -269,7 +321,7 @@
             // 
             btnClearServerCache.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             btnClearServerCache.Cursor = Cursors.Hand;
-            btnClearServerCache.Location = new Point(754, 389);
+            btnClearServerCache.Location = new Point(754, 361);
             btnClearServerCache.Name = "btnClearServerCache";
             btnClearServerCache.Size = new Size(200, 40);
             btnClearServerCache.TabIndex = 7;
@@ -307,6 +359,7 @@
             ((System.ComponentModel.ISupportInitialize)panelTitleImage).EndInit();
             panelTitleText.ResumeLayout(false);
             panelDragDrop.ResumeLayout(false);
+            panelDragDrop.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -331,5 +384,8 @@
         private Button btnBrowseForMod;
         private CheckBox chkDisplayWarning;
         private ListBox listHistory;
+        private Label lblCounter;
+        private Label lblLoadingDots;
+        private CheckBox chkSkipPostLog;
     }
 }
